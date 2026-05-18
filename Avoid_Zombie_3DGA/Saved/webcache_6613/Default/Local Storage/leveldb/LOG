@@ -1,2 +1,9 @@
-2026/05/18-19:16:59.775 b254 Creating DB C:\Users\green\OneDrive\문서\Unreal Projects\3DGA-Final-Project-Avoid-Zombie\Avoid_Zombie_3DGA\Saved\webcache_6613\Default\Local Storage\leveldb since it was missing.
-2026/05/18-19:16:59.853 b254 Reusing MANIFEST C:\Users\green\OneDrive\문서\Unreal Projects\3DGA-Final-Project-Avoid-Zombie\Avoid_Zombie_3DGA\Saved\webcache_6613\Default\Local Storage\leveldb/MANIFEST-000001
+2026/05/18-19:56:49.548 b0d4 Reusing MANIFEST C:\Users\green\OneDrive\문서\Unreal Projects\3DGA-Final-Project-Avoid-Zombie\Avoid_Zombie_3DGA\Saved\webcache_6613\Default\Local Storage\leveldb/MANIFEST-000001
+2026/05/18-19:56:49.553 b0d4 Recovering log #3
+2026/05/18-19:56:49.559 b0d4 Reusing old log C:\Users\green\OneDrive\문서\Unreal Projects\3DGA-Final-Project-Avoid-Zombie\Avoid_Zombie_3DGA\Saved\webcache_6613\Default\Local Storage\leveldb/000003.log 
+2026/05/18-20:28:02.843 bc9c Level-0 table #5: started
+2026/05/18-20:28:02.851 bc9c Level-0 table #5: 71117 bytes OK
+2026/05/18-20:28:02.854 bc9c Delete type=0 #3
+2026/05/18-20:32:02.840 bc9c Level-0 table #7: started
+2026/05/18-20:32:02.850 bc9c Level-0 table #7: 72915 bytes OK
+2026/05/18-20:32:02.852 bc9c Delete type=0 #4
