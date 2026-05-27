@@ -1,0 +1,55 @@
+"C:/Unreal Cpp Project/Avoid_Zombie_CPP/Source/Avoid_Zombie_CPP/Avoid_Zombie/ItemBox.cpp"
+@"C:/Unreal Cpp Project/Avoid_Zombie_CPP/Intermediate/Build/Win64/x64/UnrealEditor/Development/Avoid_Zombie_CPP/Avoid_Zombie_CPP.Shared.rsp"
+/FI"C:/Unreal Cpp Project/Avoid_Zombie_CPP/Intermediate/Build/Win64/x64/Avoid_Zombie_CPPEditor/Development/UnrealEd/SharedPCH.UnrealEd.Project.ValApi.ValExpApi.Cpp20.h"
+/FI"C:/Unreal Cpp Project/Avoid_Zombie_CPP/Intermediate/Build/Win64/x64/UnrealEditor/Development/Avoid_Zombie_CPP/Definitions.Avoid_Zombie_CPP.h"
+/Yu"C:/Unreal Cpp Project/Avoid_Zombie_CPP/Intermediate/Build/Win64/x64/Avoid_Zombie_CPPEditor/Development/UnrealEd/SharedPCH.UnrealEd.Project.ValApi.ValExpApi.Cpp20.h"
+/Fp"C:/Unreal Cpp Project/Avoid_Zombie_CPP/Intermediate/Build/Win64/x64/Avoid_Zombie_CPPEditor/Development/UnrealEd/SharedPCH.UnrealEd.Project.ValApi.ValExpApi.Cpp20.h.pch"
+/Fo"C:/Unreal Cpp Project/Avoid_Zombie_CPP/Intermediate/Build/Win64/x64/UnrealEditor/Development/Avoid_Zombie_CPP/ItemBox.cpp.obj"
+/experimental:log "C:/Unreal Cpp Project/Avoid_Zombie_CPP/Intermediate/Build/Win64/x64/UnrealEditor/Development/Avoid_Zombie_CPP/ItemBox.cpp.sarif"
+/sourceDependencies "C:/Unreal Cpp Project/Avoid_Zombie_CPP/Intermediate/Build/Win64/x64/UnrealEditor/Development/Avoid_Zombie_CPP/ItemBox.cpp.dep.json"
+/nologo
+/Oi
+/FC
+/diagnostics:caret
+/c
+/Gw
+/Gy
+/utf-8
+/wd4819
+/DSAL_NO_ATTRIBUTE_DECLARATIONS=1
+/permissive-
+/Zc:strictStrings-
+/Zc:__cplusplus
+/Zc:inline
+/Zc:preprocessor
+/D_CRT_STDIO_LEGACY_WIDE_SPECIFIERS=1
+/D_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS=1
+/D_WINDLL
+/D_DISABLE_EXTENDED_ALIGNED_STORAGE
+/Ob2
+/d2ExtendedWarningInfo
+/Ox
+/Ot
+/GF
+/errorReport:prompt
+/EHsc
+/DPLATFORM_EXCEPTIONS_DISABLED=0
+/Z7
+/MD
+/bigobj
+/fp:fast
+/Zo
+/Zp8
+/W4
+/we4456
+/we4458
+/we4459
+/wd4244
+/wd4838
+/we4668
+/wd4267
+/wd4100
+/TP
+/GR-
+/std:c++20
+/wd5054

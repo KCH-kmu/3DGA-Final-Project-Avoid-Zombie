@@ -1,0 +1,26 @@
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "c:\\unreal cpp project\\avoid_zombie_cpp\\source\\avoid_zombie_cpp\\avoid_zombie\\zombieattacknotify.cpp",
+        "ProvidedModule": "",
+        "PCH": "c:\\unreal cpp project\\avoid_zombie_cpp\\intermediate\\build\\win64\\x64\\avoid_zombie_cppeditor\\development\\unrealed\\sharedpch.unrealed.project.valapi.valexpapi.cpp20.h.pch",
+        "Includes": [
+            "c:\\unreal cpp project\\avoid_zombie_cpp\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\avoid_zombie_cpp\\definitions.avoid_zombie_cpp.h",
+            "c:\\unreal cpp project\\avoid_zombie_cpp\\source\\avoid_zombie_cpp\\avoid_zombie\\zombieattacknotify.h",
+            "c:\\unreal cpp project\\avoid_zombie_cpp\\intermediate\\build\\win64\\unrealeditor\\inc\\avoid_zombie_cpp\\uht\\zombieattacknotify.generated.h",
+            "c:\\unreal cpp project\\avoid_zombie_cpp\\source\\avoid_zombie_cpp\\avoid_zombie\\zombiecharacter.h",
+            "c:\\program files\\epic games\\ue_5.7\\engine\\source\\runtime\\engine\\classes\\gameframework\\character.h",
+            "c:\\program files\\epic games\\ue_5.7\\engine\\source\\runtime\\engine\\classes\\gameframework\\charactermovementreplication.h",
+            "c:\\program files\\epic games\\ue_5.7\\engine\\source\\runtime\\net\\core\\public\\net\\core\\nettoken\\nettokenexportcontext.h",
+            "c:\\program files\\epic games\\ue_5.7\\engine\\source\\runtime\\net\\iris\\public\\iris\\serialization\\irisobjectreferencepackagemap.h",
+            "c:\\program files\\epic games\\ue_5.7\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\iriscore\\uht\\irisobjectreferencepackagemap.generated.h",
+            "c:\\program files\\epic games\\ue_5.7\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\engine\\uht\\charactermovementreplication.generated.h",
+            "c:\\program files\\epic games\\ue_5.7\\engine\\source\\runtime\\engine\\classes\\gameframework\\rootmotionsource.h",
+            "c:\\program files\\epic games\\ue_5.7\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\engine\\uht\\rootmotionsource.generated.h",
+            "c:\\program files\\epic games\\ue_5.7\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\engine\\uht\\character.generated.h",
+            "c:\\unreal cpp project\\avoid_zombie_cpp\\intermediate\\build\\win64\\unrealeditor\\inc\\avoid_zombie_cpp\\uht\\zombiecharacter.generated.h"
+        ],
+        "ImportedModules": [],
+        "ImportedHeaderUnits": []
+    }
+}

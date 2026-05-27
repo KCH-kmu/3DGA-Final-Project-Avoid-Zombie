@@ -1,0 +1,8 @@
+{
+	"SourceFiles": [
+		"C:\\Unreal Cpp Project\\Avoid_Zombie_CPP\\Source\\Avoid_Zombie_CPP\\Avoid_Zombie_CPP.Build.cs",
+		"C:\\Unreal Cpp Project\\Avoid_Zombie_CPP\\Source\\Avoid_Zombie_CPP.Target.cs",
+		"C:\\Unreal Cpp Project\\Avoid_Zombie_CPP\\Source\\Avoid_Zombie_CPPEditor.Target.cs"
+	],
+	"EngineVersion": "5.7.4"
+}
