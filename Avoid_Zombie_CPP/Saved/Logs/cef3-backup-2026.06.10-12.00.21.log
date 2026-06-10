@@ -1,0 +1,25 @@
+[20928:10832:0610/204327.933:WARNING:chrome_main_delegate.cc(745)] This is Chrome version 128.0.6613.138 (not a warning)
+[20928:548:0610/204327.993:ERROR:google_update_settings.cc(265)] Failed opening key Software\Chromium to set usagestats; result: 5
+[20928:10832:0610/204328.004:WARNING:account_consistency_mode_manager.cc(77)] Desktop Identity Consistency cannot be enabled as no OAuth client ID and client secret have been configured.
+[25536:14960:0610/204332.737:WARNING:frame_impl.cc(430)] virtual CefFrameImpl::SendProcessMessage sent to detached frame 5-C9EC81EB87AE1C124F06075B1210B911 will be ignored
+[20928:37072:0610/204334.368:WARNING:browser_info.cc(345)] Returning a speculative frame for [7,9]
+[20928:10832:0610/204335.028:WARNING:browser_info.cc(345)] Returning a speculative frame for [8,9]
+[20928:10832:0610/204335.029:WARNING:browser_info.cc(345)] Returning a speculative frame for [8,9]
+[20928:10832:0610/204335.029:WARNING:browser_info.cc(345)] Returning a speculative frame for [8,9]
+[20928:10832:0610/204335.029:WARNING:browser_info.cc(345)] Returning a speculative frame for [8,9]
+[20928:37072:0610/204335.033:WARNING:browser_info.cc(345)] Returning a speculative frame for [8,9]
+[13492:32280:0610/204342.380:WARNING:codec.cc(525)] Explicitly added H264 constrained baseline to list of supported formats.
+[13492:32280:0610/204343.080:WARNING:codec.cc(525)] Explicitly added H264 constrained baseline to list of supported formats.
+[13492:9660:0610/204343.088:WARNING:codec.cc(525)] Explicitly added H264 constrained baseline to list of supported formats.
+[13492:9660:0610/204343.088:WARNING:codec.cc(525)] Explicitly added H264 constrained baseline to list of supported formats.
+[13492:9660:0610/204343.088:WARNING:codec.cc(525)] Explicitly added H264 constrained baseline to list of supported formats.
+[9820:35872:0610/204343.429:WARNING:host_resolver_dns_task.cc(863)] Address list empty after RFC3484 sort
+[9820:35872:0610/204343.441:WARNING:host_resolver_dns_task.cc(863)] Address list empty after RFC3484 sort
+[9820:35872:0610/204343.453:ERROR:socket_manager.cc(147)] Failed to resolve address for stun.cloudflare.com., errorcode: -105
+[9820:35872:0610/204343.453:ERROR:socket_manager.cc(147)] Failed to resolve address for stun.cloudflare.com., errorcode: -105
+[9820:35872:0610/204343.453:ERROR:socket_manager.cc(147)] Failed to resolve address for stun.cloudflare.com., errorcode: -105
+[13492:9660:0610/204343.453:WARNING:stun_port.cc(442)] Port[4c44800:0:1:0:host:Net[any:0:0:0:x:x:x:x:x/0:Wildcard:id=0]]: StunPort: stun host lookup received error -1
+[13492:9660:0610/204343.453:WARNING:stun_port.cc(442)] Port[4c46800:1:1:0:host:Net[any:0:0:0:x:x:x:x:x/0:Wildcard:id=0]]: StunPort: stun host lookup received error -1
+[13492:9660:0610/204343.453:WARNING:stun_port.cc(442)] Port[4c47000:2:1:0:host:Net[any:0:0:0:x:x:x:x:x/0:Wildcard:id=0]]: StunPort: stun host lookup received error -1
+[20232:37412:0610/204549.560:ERROR:shared_image_manager.cc(224)] SharedImageManager::ProduceSkia: Trying to Produce a Skia representation from a non-existent mailbox.
+[20928:10832:0610/210021.484:WARNING:pref_notifier_impl.cc(41)] Pref observer for media_router.cast_allow_all_ips found at shutdown.

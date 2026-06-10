@@ -17,8 +17,15 @@
 PRAGMA_DISABLE_DEPRECATION_WARNINGS
 enum class EItemType : uint8;
 
+// ********** Begin Delegate FOnAmmoChanged ********************************************************
+#define FID_Unreal_Cpp_Project_Avoid_Zombie_CPP_Source_Avoid_Zombie_CPP_Avoid_Zombie_WeaponComponent_h_19_DELEGATE \
+AVOID_ZOMBIE_CPP_API void FOnAmmoChanged_DelegateWrapper(const FMulticastScriptDelegate& OnAmmoChanged, int32 CurrentAmmo, int32 MaxAmmo);
+
+
+// ********** End Delegate FOnAmmoChanged **********************************************************
+
 // ********** Begin Class UWeaponComponent *********************************************************
-#define FID_Unreal_Cpp_Project_Avoid_Zombie_CPP_Source_Avoid_Zombie_CPP_Avoid_Zombie_WeaponComponent_h_33_RPC_WRAPPERS_NO_PURE_DECLS \
+#define FID_Unreal_Cpp_Project_Avoid_Zombie_CPP_Source_Avoid_Zombie_CPP_Avoid_Zombie_WeaponComponent_h_36_RPC_WRAPPERS_NO_PURE_DECLS \
 	DECLARE_FUNCTION(execGetCurrentReloadTime); \
 	DECLARE_FUNCTION(execGetCurrentRPS); \
 	DECLARE_FUNCTION(execUseHeldItem); \
@@ -31,7 +38,7 @@ enum class EItemType : uint8;
 struct Z_Construct_UClass_UWeaponComponent_Statics;
 AVOID_ZOMBIE_CPP_API UClass* Z_Construct_UClass_UWeaponComponent_NoRegister();
 
-#define FID_Unreal_Cpp_Project_Avoid_Zombie_CPP_Source_Avoid_Zombie_CPP_Avoid_Zombie_WeaponComponent_h_33_INCLASS_NO_PURE_DECLS \
+#define FID_Unreal_Cpp_Project_Avoid_Zombie_CPP_Source_Avoid_Zombie_CPP_Avoid_Zombie_WeaponComponent_h_36_INCLASS_NO_PURE_DECLS \
 private: \
 	static void StaticRegisterNativesUWeaponComponent(); \
 	friend struct ::Z_Construct_UClass_UWeaponComponent_Statics; \
@@ -42,7 +49,7 @@ public: \
 	DECLARE_SERIALIZER(UWeaponComponent)
 
 
-#define FID_Unreal_Cpp_Project_Avoid_Zombie_CPP_Source_Avoid_Zombie_CPP_Avoid_Zombie_WeaponComponent_h_33_ENHANCED_CONSTRUCTORS \
+#define FID_Unreal_Cpp_Project_Avoid_Zombie_CPP_Source_Avoid_Zombie_CPP_Avoid_Zombie_WeaponComponent_h_36_ENHANCED_CONSTRUCTORS \
 	/** Deleted move- and copy-constructors, should never be used */ \
 	UWeaponComponent(UWeaponComponent&&) = delete; \
 	UWeaponComponent(const UWeaponComponent&) = delete; \
@@ -52,13 +59,13 @@ public: \
 	NO_API virtual ~UWeaponComponent();
 
 
-#define FID_Unreal_Cpp_Project_Avoid_Zombie_CPP_Source_Avoid_Zombie_CPP_Avoid_Zombie_WeaponComponent_h_30_PROLOG
-#define FID_Unreal_Cpp_Project_Avoid_Zombie_CPP_Source_Avoid_Zombie_CPP_Avoid_Zombie_WeaponComponent_h_33_GENERATED_BODY \
+#define FID_Unreal_Cpp_Project_Avoid_Zombie_CPP_Source_Avoid_Zombie_CPP_Avoid_Zombie_WeaponComponent_h_33_PROLOG
+#define FID_Unreal_Cpp_Project_Avoid_Zombie_CPP_Source_Avoid_Zombie_CPP_Avoid_Zombie_WeaponComponent_h_36_GENERATED_BODY \
 PRAGMA_DISABLE_DEPRECATION_WARNINGS \
 public: \
-	FID_Unreal_Cpp_Project_Avoid_Zombie_CPP_Source_Avoid_Zombie_CPP_Avoid_Zombie_WeaponComponent_h_33_RPC_WRAPPERS_NO_PURE_DECLS \
-	FID_Unreal_Cpp_Project_Avoid_Zombie_CPP_Source_Avoid_Zombie_CPP_Avoid_Zombie_WeaponComponent_h_33_INCLASS_NO_PURE_DECLS \
-	FID_Unreal_Cpp_Project_Avoid_Zombie_CPP_Source_Avoid_Zombie_CPP_Avoid_Zombie_WeaponComponent_h_33_ENHANCED_CONSTRUCTORS \
+	FID_Unreal_Cpp_Project_Avoid_Zombie_CPP_Source_Avoid_Zombie_CPP_Avoid_Zombie_WeaponComponent_h_36_RPC_WRAPPERS_NO_PURE_DECLS \
+	FID_Unreal_Cpp_Project_Avoid_Zombie_CPP_Source_Avoid_Zombie_CPP_Avoid_Zombie_WeaponComponent_h_36_INCLASS_NO_PURE_DECLS \
+	FID_Unreal_Cpp_Project_Avoid_Zombie_CPP_Source_Avoid_Zombie_CPP_Avoid_Zombie_WeaponComponent_h_36_ENHANCED_CONSTRUCTORS \
 private: \
 PRAGMA_ENABLE_DEPRECATION_WARNINGS
 

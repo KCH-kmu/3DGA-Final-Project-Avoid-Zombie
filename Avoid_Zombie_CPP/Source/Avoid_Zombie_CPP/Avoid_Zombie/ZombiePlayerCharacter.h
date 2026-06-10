@@ -12,6 +12,9 @@ class UWeaponComponent;
 class UInputMappingContext;
 class UInputAction;
 
+/** 체력 변경 델리게이트 (현재 체력, 최대 체력) */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, float, CurrentHealth, float, MaxHealth);
+
 /**
  * Avoid Zombie 플레이어 캐릭터
  *
@@ -43,6 +46,11 @@ public:
 	// ─── 무기 컴포넌트 ──────────────────────────────────────────────
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TObjectPtr<UWeaponComponent> WeaponComp;
+
+	// ─── 체력 델리게이트 ────────────────────────────────────────────
+	/** 체력 변경 시 broadcast (HUD 갱신용) */
+	UPROPERTY(BlueprintAssignable, Category = "Health")
+	FOnHealthChanged OnHealthChanged;
 
 	// ─── 체력 ───────────────────────────────────────────────────────
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Health")

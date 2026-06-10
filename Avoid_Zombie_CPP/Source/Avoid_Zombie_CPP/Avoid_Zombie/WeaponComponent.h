@@ -15,6 +15,9 @@ enum class EItemType : uint8
 	HealSelf    UMETA(DisplayName = "체력 2 회복")
 };
 
+/** 탄약 변경 델리게이트 (현재 탄약, 최대 탄약) */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAmmoChanged, int32, CurrentAmmo, int32, MaxAmmo);
+
 /**
  * 무기 컴포넌트 (AR)
  *
@@ -37,6 +40,11 @@ public:
 
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	// ─── 델리게이트 ─────────────────────────────────────────────────
+	/** 탄약 수 변경 시 broadcast (HUD 갱신용) */
+	UPROPERTY(BlueprintAssignable, Category = "Weapon")
+	FOnAmmoChanged OnAmmoChanged;
 
 	// ─── 탄약 상태 ──────────────────────────────────────────────────
 	UPROPERTY(BlueprintReadOnly, Category = "Weapon")

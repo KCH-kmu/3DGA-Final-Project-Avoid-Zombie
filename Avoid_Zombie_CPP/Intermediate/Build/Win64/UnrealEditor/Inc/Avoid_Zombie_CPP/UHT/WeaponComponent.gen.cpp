@@ -15,6 +15,7 @@ void EmptyLinkFunctionForGeneratedCodeWeaponComponent() {}
 AVOID_ZOMBIE_CPP_API UClass* Z_Construct_UClass_UWeaponComponent();
 AVOID_ZOMBIE_CPP_API UClass* Z_Construct_UClass_UWeaponComponent_NoRegister();
 AVOID_ZOMBIE_CPP_API UEnum* Z_Construct_UEnum_Avoid_Zombie_CPP_EItemType();
+AVOID_ZOMBIE_CPP_API UFunction* Z_Construct_UDelegateFunction_Avoid_Zombie_CPP_OnAmmoChanged__DelegateSignature();
 ENGINE_API UClass* Z_Construct_UClass_UActorComponent();
 UPackage* Z_Construct_UPackage__Script_Avoid_Zombie_CPP();
 // ********** End Cross Module References **********************************************************
@@ -84,6 +85,71 @@ UEnum* Z_Construct_UEnum_Avoid_Zombie_CPP_EItemType()
 	return Z_Registration_Info_UEnum_EItemType.InnerSingleton;
 }
 // ********** End Enum EItemType *******************************************************************
+
+// ********** Begin Delegate FOnAmmoChanged ********************************************************
+struct Z_Construct_UDelegateFunction_Avoid_Zombie_CPP_OnAmmoChanged__DelegateSignature_Statics
+{
+	struct _Script_Avoid_Zombie_CPP_eventOnAmmoChanged_Parms
+	{
+		int32 CurrentAmmo;
+		int32 MaxAmmo;
+	};
+#if WITH_METADATA
+	static constexpr UECodeGen_Private::FMetaDataPairParam Function_MetaDataParams[] = {
+#if !UE_BUILD_SHIPPING
+		{ "Comment", "/** \xed\x83\x84\xec\x95\xbd \xeb\xb3\x80\xea\xb2\xbd \xeb\x8d\xb8\xeb\xa6\xac\xea\xb2\x8c\xec\x9d\xb4\xed\x8a\xb8 (\xed\x98\x84\xec\x9e\xac \xed\x83\x84\xec\x95\xbd, \xec\xb5\x9c\xeb\x8c\x80 \xed\x83\x84\xec\x95\xbd) */" },
+#endif
+		{ "ModuleRelativePath", "Avoid_Zombie/WeaponComponent.h" },
+#if !UE_BUILD_SHIPPING
+		{ "ToolTip", "\xed\x83\x84\xec\x95\xbd \xeb\xb3\x80\xea\xb2\xbd \xeb\x8d\xb8\xeb\xa6\xac\xea\xb2\x8c\xec\x9d\xb4\xed\x8a\xb8 (\xed\x98\x84\xec\x9e\xac \xed\x83\x84\xec\x95\xbd, \xec\xb5\x9c\xeb\x8c\x80 \xed\x83\x84\xec\x95\xbd)" },
+#endif
+	};
+#endif // WITH_METADATA
+
+// ********** Begin Delegate FOnAmmoChanged constinit property declarations ************************
+	static const UECodeGen_Private::FIntPropertyParams NewProp_CurrentAmmo;
+	static const UECodeGen_Private::FIntPropertyParams NewProp_MaxAmmo;
+	static const UECodeGen_Private::FPropertyParamsBase* const PropPointers[];
+// ********** End Delegate FOnAmmoChanged constinit property declarations **************************
+	static const UECodeGen_Private::FDelegateFunctionParams FuncParams;
+};
+
+// ********** Begin Delegate FOnAmmoChanged Property Definitions ***********************************
+const UECodeGen_Private::FIntPropertyParams Z_Construct_UDelegateFunction_Avoid_Zombie_CPP_OnAmmoChanged__DelegateSignature_Statics::NewProp_CurrentAmmo = { "CurrentAmmo", nullptr, (EPropertyFlags)0x0010000000000080, UECodeGen_Private::EPropertyGenFlags::Int, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(_Script_Avoid_Zombie_CPP_eventOnAmmoChanged_Parms, CurrentAmmo), METADATA_PARAMS(0, nullptr) };
+const UECodeGen_Private::FIntPropertyParams Z_Construct_UDelegateFunction_Avoid_Zombie_CPP_OnAmmoChanged__DelegateSignature_Statics::NewProp_MaxAmmo = { "MaxAmmo", nullptr, (EPropertyFlags)0x0010000000000080, UECodeGen_Private::EPropertyGenFlags::Int, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(_Script_Avoid_Zombie_CPP_eventOnAmmoChanged_Parms, MaxAmmo), METADATA_PARAMS(0, nullptr) };
+const UECodeGen_Private::FPropertyParamsBase* const Z_Construct_UDelegateFunction_Avoid_Zombie_CPP_OnAmmoChanged__DelegateSignature_Statics::PropPointers[] = {
+	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UDelegateFunction_Avoid_Zombie_CPP_OnAmmoChanged__DelegateSignature_Statics::NewProp_CurrentAmmo,
+	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UDelegateFunction_Avoid_Zombie_CPP_OnAmmoChanged__DelegateSignature_Statics::NewProp_MaxAmmo,
+};
+static_assert(UE_ARRAY_COUNT(Z_Construct_UDelegateFunction_Avoid_Zombie_CPP_OnAmmoChanged__DelegateSignature_Statics::PropPointers) < 2048);
+// ********** End Delegate FOnAmmoChanged Property Definitions *************************************
+const UECodeGen_Private::FDelegateFunctionParams Z_Construct_UDelegateFunction_Avoid_Zombie_CPP_OnAmmoChanged__DelegateSignature_Statics::FuncParams = { { (UObject*(*)())Z_Construct_UPackage__Script_Avoid_Zombie_CPP, nullptr, "OnAmmoChanged__DelegateSignature", 	Z_Construct_UDelegateFunction_Avoid_Zombie_CPP_OnAmmoChanged__DelegateSignature_Statics::PropPointers, 
+	UE_ARRAY_COUNT(Z_Construct_UDelegateFunction_Avoid_Zombie_CPP_OnAmmoChanged__DelegateSignature_Statics::PropPointers), 
+sizeof(Z_Construct_UDelegateFunction_Avoid_Zombie_CPP_OnAmmoChanged__DelegateSignature_Statics::_Script_Avoid_Zombie_CPP_eventOnAmmoChanged_Parms),
+RF_Public|RF_Transient|RF_MarkAsNative, (EFunctionFlags)0x00130000, 0, 0, METADATA_PARAMS(UE_ARRAY_COUNT(Z_Construct_UDelegateFunction_Avoid_Zombie_CPP_OnAmmoChanged__DelegateSignature_Statics::Function_MetaDataParams), Z_Construct_UDelegateFunction_Avoid_Zombie_CPP_OnAmmoChanged__DelegateSignature_Statics::Function_MetaDataParams)},  };
+static_assert(sizeof(Z_Construct_UDelegateFunction_Avoid_Zombie_CPP_OnAmmoChanged__DelegateSignature_Statics::_Script_Avoid_Zombie_CPP_eventOnAmmoChanged_Parms) < MAX_uint16);
+UFunction* Z_Construct_UDelegateFunction_Avoid_Zombie_CPP_OnAmmoChanged__DelegateSignature()
+{
+	static UFunction* ReturnFunction = nullptr;
+	if (!ReturnFunction)
+	{
+		UECodeGen_Private::ConstructUDelegateFunction(&ReturnFunction, Z_Construct_UDelegateFunction_Avoid_Zombie_CPP_OnAmmoChanged__DelegateSignature_Statics::FuncParams);
+	}
+	return ReturnFunction;
+}
+void FOnAmmoChanged_DelegateWrapper(const FMulticastScriptDelegate& OnAmmoChanged, int32 CurrentAmmo, int32 MaxAmmo)
+{
+	struct _Script_Avoid_Zombie_CPP_eventOnAmmoChanged_Parms
+	{
+		int32 CurrentAmmo;
+		int32 MaxAmmo;
+	};
+	_Script_Avoid_Zombie_CPP_eventOnAmmoChanged_Parms Parms;
+	Parms.CurrentAmmo=CurrentAmmo;
+	Parms.MaxAmmo=MaxAmmo;
+	OnAmmoChanged.ProcessMulticastDelegate<UObject>(&Parms);
+}
+// ********** End Delegate FOnAmmoChanged **********************************************************
 
 // ********** Begin Class UWeaponComponent Function GetCurrentReloadTime ***************************
 struct Z_Construct_UFunction_UWeaponComponent_GetCurrentReloadTime_Statics
@@ -437,6 +503,16 @@ struct Z_Construct_UClass_UWeaponComponent_Statics
 		{ "ToolTip", "\xeb\xac\xb4\xea\xb8\xb0 \xec\xbb\xb4\xed\x8f\xac\xeb\x84\x8c\xed\x8a\xb8 (AR)\n\n\xec\x8a\xa4\xed\x8e\x99:\n- \xed\x83\x84\xec\xb0\xbd 30\xeb\xb0\x9c / \xed\x83\x84\xec\x95\xbd \xeb\xac\xb4\xed\x95\x9c\n- RPS 10\xeb\xb0\x9c/\xec\xb4\x88, \xeb\xb0\x9c\xeb\x8b\xb9 \xeb\x8d\xb0\xeb\xaf\xb8\xec\xa7\x80 2\n- \xec\x9e\xac\xec\x9e\xa5\xec\xa0\x84 2\xec\xb4\x88 (R \xeb\x98\x90\xeb\x8a\x94 0\xeb\xb0\x9c \xec\x8b\x9c \xec\x9e\x90\xeb\x8f\x99)\n- \xec\x9e\xac\xec\x9e\xa5\xec\xa0\x84 \xec\xa7\x84\xed\x96\x89\xeb\xa5\xa0(0~1) \xe2\x86\x92 \xed\x81\xac\xeb\xa1\x9c\xec\x8a\xa4\xed\x97\xa4\xec\x96\xb4 \xec\x9b\x90\xed\x98\x95 \xed\x83\x80\xec\x9d\xb4\xeb\xa8\xb8\xec\x97\x90 \xec\x82\xac\xec\x9a\xa9\n\n\xec\x95\x84\xec\x9d\xb4\xed\x85\x9c FireRateUp \xeb\xb0\x9c\xeb\x8f\x99 \xec\x8b\x9c:\n- RPS 15 / \xec\x9e\xac\xec\x9e\xa5\xec\xa0\x84 1\xec\xb4\x88 / 5\xec\xb4\x88\xea\xb0\x84 \xec\x9c\xa0\xec\xa7\x80" },
 #endif
 	};
+	static constexpr UECodeGen_Private::FMetaDataPairParam NewProp_OnAmmoChanged_MetaData[] = {
+		{ "Category", "Weapon" },
+#if !UE_BUILD_SHIPPING
+		{ "Comment", "/** \xed\x83\x84\xec\x95\xbd \xec\x88\x98 \xeb\xb3\x80\xea\xb2\xbd \xec\x8b\x9c broadcast (HUD \xea\xb0\xb1\xec\x8b\xa0\xec\x9a\xa9) */" },
+#endif
+		{ "ModuleRelativePath", "Avoid_Zombie/WeaponComponent.h" },
+#if !UE_BUILD_SHIPPING
+		{ "ToolTip", "\xed\x83\x84\xec\x95\xbd \xec\x88\x98 \xeb\xb3\x80\xea\xb2\xbd \xec\x8b\x9c broadcast (HUD \xea\xb0\xb1\xec\x8b\xa0\xec\x9a\xa9)" },
+#endif
+	};
 	static constexpr UECodeGen_Private::FMetaDataPairParam NewProp_CurrentAmmo_MetaData[] = {
 		{ "Category", "Weapon" },
 #if !UE_BUILD_SHIPPING
@@ -520,6 +596,7 @@ struct Z_Construct_UClass_UWeaponComponent_Statics
 #endif // WITH_METADATA
 
 // ********** Begin Class UWeaponComponent constinit property declarations *************************
+	static const UECodeGen_Private::FMulticastDelegatePropertyParams NewProp_OnAmmoChanged;
 	static const UECodeGen_Private::FIntPropertyParams NewProp_CurrentAmmo;
 	static const UECodeGen_Private::FIntPropertyParams NewProp_MaxAmmo;
 	static void NewProp_bIsReloading_SetBit(void* Obj);
@@ -562,6 +639,7 @@ struct Z_Construct_UClass_UWeaponComponent_Statics
 }; // struct Z_Construct_UClass_UWeaponComponent_Statics
 
 // ********** Begin Class UWeaponComponent Property Definitions ************************************
+const UECodeGen_Private::FMulticastDelegatePropertyParams Z_Construct_UClass_UWeaponComponent_Statics::NewProp_OnAmmoChanged = { "OnAmmoChanged", nullptr, (EPropertyFlags)0x0010000010080000, UECodeGen_Private::EPropertyGenFlags::InlineMulticastDelegate, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(UWeaponComponent, OnAmmoChanged), Z_Construct_UDelegateFunction_Avoid_Zombie_CPP_OnAmmoChanged__DelegateSignature, METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_OnAmmoChanged_MetaData), NewProp_OnAmmoChanged_MetaData) }; // 3489060899
 const UECodeGen_Private::FIntPropertyParams Z_Construct_UClass_UWeaponComponent_Statics::NewProp_CurrentAmmo = { "CurrentAmmo", nullptr, (EPropertyFlags)0x0010000000000014, UECodeGen_Private::EPropertyGenFlags::Int, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(UWeaponComponent, CurrentAmmo), METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_CurrentAmmo_MetaData), NewProp_CurrentAmmo_MetaData) };
 const UECodeGen_Private::FIntPropertyParams Z_Construct_UClass_UWeaponComponent_Statics::NewProp_MaxAmmo = { "MaxAmmo", nullptr, (EPropertyFlags)0x0010000000010015, UECodeGen_Private::EPropertyGenFlags::Int, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(UWeaponComponent, MaxAmmo), METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_MaxAmmo_MetaData), NewProp_MaxAmmo_MetaData) };
 void Z_Construct_UClass_UWeaponComponent_Statics::NewProp_bIsReloading_SetBit(void* Obj)
@@ -579,6 +657,7 @@ const UECodeGen_Private::FFloatPropertyParams Z_Construct_UClass_UWeaponComponen
 const UECodeGen_Private::FFloatPropertyParams Z_Construct_UClass_UWeaponComponent_Statics::NewProp_BuffReloadTime = { "BuffReloadTime", nullptr, (EPropertyFlags)0x0020080000010001, UECodeGen_Private::EPropertyGenFlags::Float, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(UWeaponComponent, BuffReloadTime), METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_BuffReloadTime_MetaData), NewProp_BuffReloadTime_MetaData) };
 const UECodeGen_Private::FFloatPropertyParams Z_Construct_UClass_UWeaponComponent_Statics::NewProp_BuffDuration = { "BuffDuration", nullptr, (EPropertyFlags)0x0020080000010001, UECodeGen_Private::EPropertyGenFlags::Float, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(UWeaponComponent, BuffDuration), METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_BuffDuration_MetaData), NewProp_BuffDuration_MetaData) };
 const UECodeGen_Private::FPropertyParamsBase* const Z_Construct_UClass_UWeaponComponent_Statics::PropPointers[] = {
+	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_UWeaponComponent_Statics::NewProp_OnAmmoChanged,
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_UWeaponComponent_Statics::NewProp_CurrentAmmo,
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_UWeaponComponent_Statics::NewProp_MaxAmmo,
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_UWeaponComponent_Statics::NewProp_bIsReloading,
@@ -638,10 +717,10 @@ struct Z_CompiledInDeferFile_FID_Unreal_Cpp_Project_Avoid_Zombie_CPP_Source_Avoi
 		{ EItemType_StaticEnum, TEXT("EItemType"), &Z_Registration_Info_UEnum_EItemType, CONSTRUCT_RELOAD_VERSION_INFO(FEnumReloadVersionInfo, 2004411603U) },
 	};
 	static constexpr FClassRegisterCompiledInInfo ClassInfo[] = {
-		{ Z_Construct_UClass_UWeaponComponent, UWeaponComponent::StaticClass, TEXT("UWeaponComponent"), &Z_Registration_Info_UClass_UWeaponComponent, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(UWeaponComponent), 3608384240U) },
+		{ Z_Construct_UClass_UWeaponComponent, UWeaponComponent::StaticClass, TEXT("UWeaponComponent"), &Z_Registration_Info_UClass_UWeaponComponent, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(UWeaponComponent), 2236142654U) },
 	};
 }; // Z_CompiledInDeferFile_FID_Unreal_Cpp_Project_Avoid_Zombie_CPP_Source_Avoid_Zombie_CPP_Avoid_Zombie_WeaponComponent_h__Script_Avoid_Zombie_CPP_Statics 
-static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_Unreal_Cpp_Project_Avoid_Zombie_CPP_Source_Avoid_Zombie_CPP_Avoid_Zombie_WeaponComponent_h__Script_Avoid_Zombie_CPP_2844004167{
+static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_Unreal_Cpp_Project_Avoid_Zombie_CPP_Source_Avoid_Zombie_CPP_Avoid_Zombie_WeaponComponent_h__Script_Avoid_Zombie_CPP_3800971107{
 	TEXT("/Script/Avoid_Zombie_CPP"),
 	Z_CompiledInDeferFile_FID_Unreal_Cpp_Project_Avoid_Zombie_CPP_Source_Avoid_Zombie_CPP_Avoid_Zombie_WeaponComponent_h__Script_Avoid_Zombie_CPP_Statics::ClassInfo, UE_ARRAY_COUNT(Z_CompiledInDeferFile_FID_Unreal_Cpp_Project_Avoid_Zombie_CPP_Source_Avoid_Zombie_CPP_Avoid_Zombie_WeaponComponent_h__Script_Avoid_Zombie_CPP_Statics::ClassInfo),
 	nullptr, 0,

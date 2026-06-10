@@ -41,6 +41,7 @@ void AZombiePlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	CurrentHealth = MaxHealth;
+	OnHealthChanged.Broadcast(CurrentHealth, MaxHealth);
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 
 	// Enhanced Input 매핑 컨텍스트 등록
@@ -143,6 +144,7 @@ void AZombiePlayerCharacter::TakeDamageAmount(float Amount)
 {
 	if (IsDead()) return;
 	CurrentHealth = FMath::Clamp(CurrentHealth - Amount, 0.f, MaxHealth);
+	OnHealthChanged.Broadcast(CurrentHealth, MaxHealth);
 	UE_LOG(LogTemp, Log, TEXT("[Player] 피해 %.0f | 남은 체력 %.0f"), Amount, CurrentHealth);
 	if (CurrentHealth <= 0.f) Die();
 }
@@ -150,6 +152,7 @@ void AZombiePlayerCharacter::TakeDamageAmount(float Amount)
 void AZombiePlayerCharacter::HealHealth(float Amount)
 {
 	CurrentHealth = FMath::Clamp(CurrentHealth + Amount, 0.f, MaxHealth);
+	OnHealthChanged.Broadcast(CurrentHealth, MaxHealth);
 }
 
 // ─── 사망 ─────────────────────────────────────────────────────────────────

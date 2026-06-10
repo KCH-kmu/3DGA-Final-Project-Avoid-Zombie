@@ -18,6 +18,7 @@ void UWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	CurrentAmmo = MaxAmmo;
+	OnAmmoChanged.Broadcast(CurrentAmmo, MaxAmmo);
 }
 
 void UWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -71,6 +72,7 @@ void UWeaponComponent::FireOnce()
 	}
 
 	CurrentAmmo--;
+	OnAmmoChanged.Broadcast(CurrentAmmo, MaxAmmo);
 	PerformLineTrace();
 
 	FireTimer = (GetCurrentRPS() > 0.f) ? (1.f / GetCurrentRPS()) : 0.1f;
@@ -140,6 +142,7 @@ void UWeaponComponent::FinishReload()
 	bIsReloading   = false;
 	ReloadProgress = 1.f;
 	CurrentAmmo    = MaxAmmo;
+	OnAmmoChanged.Broadcast(CurrentAmmo, MaxAmmo);
 	UE_LOG(LogTemp, Log, TEXT("[Weapon] 재장전 완료"));
 }
 

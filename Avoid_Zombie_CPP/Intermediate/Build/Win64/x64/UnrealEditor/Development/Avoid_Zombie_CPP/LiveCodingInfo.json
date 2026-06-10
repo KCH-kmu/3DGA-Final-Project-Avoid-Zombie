@@ -57,12 +57,13 @@
 			"ZombieCharacter.gen.cpp.obj",
 			"ZombieGameMode.gen.cpp.obj",
 			"ZombieGameState.gen.cpp.obj",
+			"ZombieHUD.gen.cpp.obj",
+			"ZombieHUDWidget.gen.cpp.obj",
 			"ZombiePlayerCharacter.gen.cpp.obj",
 			"PerModuleInline.gen.cpp.obj",
 			"ItemBox.cpp.obj",
 			"ScoreManager.cpp.obj",
 			"WaveManager.cpp.obj",
-			"WeaponComponent.cpp.obj",
 			"ZombieAIController.cpp.obj",
 			"ZombieAttackNotify.cpp.obj",
 			"ZombieCharacter.cpp.obj",
@@ -77,6 +78,11 @@
 			"CombatEnemy.cpp.obj",
 			"CombatEnemySpawner.cpp.obj",
 			"CombatStateTreeUtility.cpp.obj",
+			"ZombieHUD.cpp.obj",
+			"ZombieHUDWidget.cpp.obj",
+			"WeaponComponent.cpp.obj"
+		],
+		"Module.Avoid_Zombie_CPP.4.cpp.obj": [
 			"EnvQueryContext_Danger.cpp.obj",
 			"EnvQueryContext_Player.cpp.obj",
 			"AnimNotify_CheckChargedAttack.cpp.obj",
@@ -94,7 +100,23 @@
 			"CombatAttacker.cpp.obj",
 			"CombatDamageable.cpp.obj",
 			"CombatLifeBar.cpp.obj",
-			"AnimNotify_EndDash.cpp.obj"
+			"AnimNotify_EndDash.cpp.obj",
+			"PlatformingCharacter.cpp.obj",
+			"PlatformingGameMode.cpp.obj",
+			"PlatformingPlayerController.cpp.obj",
+			"SideScrollingAIController.cpp.obj",
+			"SideScrollingNPC.cpp.obj",
+			"SideScrollingStateTreeUtility.cpp.obj",
+			"SideScrollingJumpPad.cpp.obj",
+			"SideScrollingMovingPlatform.cpp.obj",
+			"SideScrollingPickup.cpp.obj",
+			"SideScrollingSoftPlatform.cpp.obj",
+			"SideScrollingInteractable.cpp.obj",
+			"SideScrollingCameraManager.cpp.obj",
+			"SideScrollingCharacter.cpp.obj",
+			"SideScrollingGameMode.cpp.obj",
+			"SideScrollingPlayerController.cpp.obj",
+			"SideScrollingUI.cpp.obj"
 		]
 	}
 }
