@@ -29,7 +29,7 @@ void AZombieGameState::SetCurrentWave(int32 NewWave)
 
 void AZombieGameState::AddWaveClearScore(int32 WaveNumber)
 {
-	TotalScore += WaveNumber * 100;
+	TotalScore += 100;
 	OnScoreChanged.Broadcast(TotalScore);
 }
 

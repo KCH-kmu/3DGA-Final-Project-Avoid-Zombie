@@ -40,9 +40,15 @@ void AWaveManager::StartNextWave()
 	if (CurrentWave > 1 && (CurrentWave - 1) % 5 == 0)
 		CurrentZombieMaxHealth += 1.f;
 
-	// GameState 웨이브 갱신 + HUD broadcast
 	if (AZombieGameState* GS = GetWorld()->GetGameState<AZombieGameState>())
+	{
+		// 2웨이브부터 이전 웨이브 클리어 점수 +100 지급
+		if (CurrentWave > 1)
+			GS->AddWaveClearScore(CurrentWave - 1);
+
+		// GameState 웨이브 번호 갱신 + HUD broadcast
 		GS->SetCurrentWave(CurrentWave);
+	}
 
 	SpawnQueueCount  = GetZombieCountForWave(CurrentWave);
 	AliveZombieCount = 0;
@@ -129,11 +135,7 @@ void AWaveManager::OnZombieDead()
 void AWaveManager::OnWaveClear()
 {
 	bWaveActive = false;
-
-	if (AZombieGameState* GS = GetWorld()->GetGameState<AZombieGameState>())
-		GS->AddWaveClearScore(CurrentWave);
-
-	UE_LOG(LogTemp, Warning, TEXT("[Wave] %d웨이브 클리어!"), CurrentWave);
+	UE_LOG(LogTemp, Warning, TEXT("[Wave] %d웨이브 좀비 전멸!"), CurrentWave);
 }
 
 void AWaveManager::StopWave()

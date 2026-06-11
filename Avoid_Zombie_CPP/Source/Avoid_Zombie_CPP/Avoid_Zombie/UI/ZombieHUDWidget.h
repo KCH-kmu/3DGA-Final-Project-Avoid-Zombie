@@ -58,7 +58,7 @@ public:
 	void SetTime(float NewTime);
 	virtual void SetTime_Implementation(float NewTime);
 
-	/** "MM:SS" 포맷 텍스트 바인딩용 */
+	/** "PlayTime : MM:SS" 포맷 텍스트 바인딩용 */
 	UFUNCTION(BlueprintPure, Category = "HUD|Time")
 	FText GetTimeText() const;
 
@@ -77,6 +77,14 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "HUD|Score")
 	void SetKills(int32 NewKills);
 	virtual void SetKills_Implementation(int32 NewKills);
+
+	/** "Kill : 0" 포맷 텍스트 바인딩용 */
+	UFUNCTION(BlueprintPure, Category = "HUD|Score")
+	FText GetKillsText() const;
+
+	/** "Score : 0" 포맷 텍스트 바인딩용 */
+	UFUNCTION(BlueprintPure, Category = "HUD|Score")
+	FText GetScoreText() const;
 
 	// ─── 웨이브 ─────────────────────────────────────────────────────
 	UPROPERTY(BlueprintReadOnly, Category = "HUD|Wave")

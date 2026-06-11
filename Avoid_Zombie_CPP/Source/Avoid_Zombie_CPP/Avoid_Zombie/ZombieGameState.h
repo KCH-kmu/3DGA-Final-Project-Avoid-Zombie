@@ -66,7 +66,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Score")
 	void AddKillScore();
 
-	/** 웨이브 클리어 점수 추가 (웨이브 * 100) */
+	/** 웨이브 클리어 점수 추가 (+100 고정) */
 	UFUNCTION(BlueprintCallable, Category = "Score")
 	void AddWaveClearScore(int32 WaveNumber);
 

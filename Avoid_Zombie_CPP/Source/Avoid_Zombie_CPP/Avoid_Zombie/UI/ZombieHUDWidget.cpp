@@ -43,7 +43,7 @@ FText UZombieHUDWidget::GetTimeText() const
 	const int32 TotalSec = FMath::FloorToInt(DisplayTime);
 	const int32 Min      = TotalSec / 60;
 	const int32 Sec      = TotalSec % 60;
-	return FText::FromString(FString::Printf(TEXT("%02d:%02d"), Min, Sec));
+	return FText::FromString(FString::Printf(TEXT("PlayTime : %02d:%02d"), Min, Sec));
 }
 
 // ─── 점수 ─────────────────────────────────────────────────────────────────
@@ -56,6 +56,16 @@ void UZombieHUDWidget::SetScore_Implementation(int32 NewScore)
 void UZombieHUDWidget::SetKills_Implementation(int32 NewKills)
 {
 	TotalKills = NewKills;
+}
+
+FText UZombieHUDWidget::GetKillsText() const
+{
+	return FText::FromString(FString::Printf(TEXT("Kill : %d"), TotalKills));
+}
+
+FText UZombieHUDWidget::GetScoreText() const
+{
+	return FText::FromString(FString::Printf(TEXT("Score : %d"), TotalScore));
 }
 
 // ─── 웨이브 ───────────────────────────────────────────────────────────────
