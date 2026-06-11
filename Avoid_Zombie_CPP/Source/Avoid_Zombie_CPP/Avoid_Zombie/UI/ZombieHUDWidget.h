@@ -9,10 +9,10 @@
  * Avoid Zombie 메인 HUD 위젯
  *
  * WBP_ZombieHUD에서 이 클래스를 부모로 설정 후
- * - 탄약: CurrentAmmo / MaxAmmo 변수에 텍스트 바인딩
- * - 체력: CurrentHealth / MaxHealth 변수에 Progress Bar·텍스트 바인딩
- *         GetHealthPercent() → Progress Bar Percent 바인딩
- *         GetHealthBarColor() → Progress Bar FillColorAndOpacity 바인딩
+ * - 탄약  : CurrentAmmo / MaxAmmo 텍스트 바인딩          (우하단)
+ * - 체력  : GetHealthPercent / GetHealthBarColor 바인딩  (좌하단)
+ * - 시간  : GetTimeText 바인딩                           (우상단)
+ * - 점수  : TotalScore 텍스트 바인딩                     (우상단)
  */
 UCLASS(Abstract)
 class AVOID_ZOMBIE_CPP_API UZombieHUDWidget : public UUserWidget
@@ -46,10 +46,43 @@ public:
 	UFUNCTION(BlueprintPure, Category = "HUD|Health")
 	float GetHealthPercent() const;
 
-	/**
-	 * Progress Bar FillColorAndOpacity 바인딩용
-	 * 7~10 → 초록 / 4~6 → 노랑 / 1~3 → 빨강
-	 */
+	/** Progress Bar 색상 바인딩용 (초록/노랑/빨강) */
 	UFUNCTION(BlueprintPure, Category = "HUD|Health")
 	FLinearColor GetHealthBarColor() const;
+
+	// ─── 시간 ───────────────────────────────────────────────────────
+	UPROPERTY(BlueprintReadOnly, Category = "HUD|Time")
+	float DisplayTime = 0.f;
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "HUD|Time")
+	void SetTime(float NewTime);
+	virtual void SetTime_Implementation(float NewTime);
+
+	/** "MM:SS" 포맷 텍스트 바인딩용 */
+	UFUNCTION(BlueprintPure, Category = "HUD|Time")
+	FText GetTimeText() const;
+
+	// ─── 점수 ───────────────────────────────────────────────────────
+	UPROPERTY(BlueprintReadOnly, Category = "HUD|Score")
+	int32 TotalScore = 0;
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "HUD|Score")
+	void SetScore(int32 NewScore);
+	virtual void SetScore_Implementation(int32 NewScore);
+
+	// ─── 킬 카운트 ──────────────────────────────────────────────────
+	UPROPERTY(BlueprintReadOnly, Category = "HUD|Score")
+	int32 TotalKills = 0;
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "HUD|Score")
+	void SetKills(int32 NewKills);
+	virtual void SetKills_Implementation(int32 NewKills);
+
+	// ─── 웨이브 ─────────────────────────────────────────────────────
+	UPROPERTY(BlueprintReadOnly, Category = "HUD|Wave")
+	int32 CurrentWave = 0;
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "HUD|Wave")
+	void SetWave(int32 NewWave);
+	virtual void SetWave_Implementation(int32 NewWave);
 };

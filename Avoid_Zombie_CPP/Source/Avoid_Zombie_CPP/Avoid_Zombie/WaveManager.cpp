@@ -40,9 +40,9 @@ void AWaveManager::StartNextWave()
 	if (CurrentWave > 1 && (CurrentWave - 1) % 5 == 0)
 		CurrentZombieMaxHealth += 1.f;
 
-	// GameState 웨이브 갱신
+	// GameState 웨이브 갱신 + HUD broadcast
 	if (AZombieGameState* GS = GetWorld()->GetGameState<AZombieGameState>())
-		GS->CurrentWave = CurrentWave;
+		GS->SetCurrentWave(CurrentWave);
 
 	SpawnQueueCount  = GetZombieCountForWave(CurrentWave);
 	AliveZombieCount = 0;

@@ -17,13 +17,23 @@ public:
 
 	virtual void BeginPlay() override;
 
-	/** 탄약 HUD 갱신 — WeaponComponent.OnAmmoChanged에 바인딩 */
-	UFUNCTION()
-	void OnAmmoChanged(int32 Current, int32 Max);
+	/** 탄약 갱신 */
+	UFUNCTION() void OnAmmoChanged(int32 Current, int32 Max);
 
-	/** 체력 HUD 갱신 — ZombiePlayerCharacter.OnHealthChanged에 바인딩 */
-	UFUNCTION()
-	void OnHealthChanged(float Current, float Max);
+	/** 체력 갱신 */
+	UFUNCTION() void OnHealthChanged(float Current, float Max);
+
+	/** 시간 갱신 */
+	UFUNCTION() void OnTimeUpdated(float NewTime);
+
+	/** 점수 갱신 */
+	UFUNCTION() void OnScoreChanged(int32 NewScore);
+
+	/** 킬 카운트 갱신 */
+	UFUNCTION() void OnKillsChanged(int32 NewKills);
+
+	/** 웨이브 갱신 */
+	UFUNCTION() void OnWaveChanged(int32 NewWave);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "HUD")

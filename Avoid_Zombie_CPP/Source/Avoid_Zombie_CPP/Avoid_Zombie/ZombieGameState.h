@@ -5,6 +5,18 @@
 #include "GameFramework/GameStateBase.h"
 #include "ZombieGameState.generated.h"
 
+/** 점수 변경 델리게이트 */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnScoreChanged, int32, NewScore);
+
+/** 시간 갱신 델리게이트 */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTimeUpdated, float, NewTime);
+
+/** 웨이브 변경 델리게이트 */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWaveChanged, int32, NewWave);
+
+/** 킬 카운트 변경 델리게이트 */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnKillsChanged, int32, NewKills);
+
 /**
  * 게임 전역 상태
  * 웨이브 번호, 킬 수, 점수, 경과 시간을 보관한다.
@@ -16,6 +28,19 @@ class AVOID_ZOMBIE_CPP_API AZombieGameState : public AGameStateBase
 
 public:
 	AZombieGameState();
+
+	// ─── 델리게이트 ─────────────────────────────────────────────────
+	UPROPERTY(BlueprintAssignable, Category = "Score")
+	FOnScoreChanged OnScoreChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Time")
+	FOnTimeUpdated OnTimeUpdated;
+
+	UPROPERTY(BlueprintAssignable, Category = "Wave")
+	FOnWaveChanged OnWaveChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Score")
+	FOnKillsChanged OnKillsChanged;
 
 	// ─── 웨이브 ─────────────────────────────────────────────────────
 	UPROPERTY(BlueprintReadOnly, Category = "Wave")
@@ -55,4 +80,7 @@ public:
 
 	/** GameMode의 Tick에서 호출 — 경과 시간 갱신 */
 	void UpdateElapsedTime(float DeltaTime);
+
+	/** WaveManager에서 호출 — 웨이브 번호 갱신 + broadcast */
+	void SetCurrentWave(int32 NewWave);
 };
