@@ -53,6 +53,7 @@ void UWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 void UWeaponComponent::StartFire()
 {
 	if (bIsReloading) return;
+	if (bIsFiring) return; // 이미 발사 중이면 무시 (FireTimer 리셋 방지 → 매 틱 호출해도 안전)
 	bIsFiring = true;
 	FireTimer = 0.f; // 첫 발은 즉시 발사
 }

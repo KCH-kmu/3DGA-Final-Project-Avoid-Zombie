@@ -34,6 +34,7 @@ AZombiePlayerCharacter::AZombiePlayerCharacter()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll  = false;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
+	GetCharacterMovement()->RotationRate = FRotator(0.f, 500.f, 0.f); // 달리기 중 이동 방향 회전 속도
 	GetCharacterMovement()->MaxWalkSpeed = 200.f;
 }
 
@@ -53,6 +54,53 @@ void AZombiePlayerCharacter::BeginPlay()
 			if (MappingContext)
 				Sub->AddMappingContext(MappingContext, 0);
 		}
+	}
+}
+
+void AZombiePlayerCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	// ─── 달리기 종료 후 카메라 방향으로 부드럽게 회전 ──────────────
+	if (bRealigningToCamera)
+	{
+		if (!Controller)
+		{
+			bRealigningToCamera = false;
+		}
+		else
+		{
+			const float TargetYaw = Controller->GetControlRotation().Yaw;
+			const FRotator Target(0.f, TargetYaw, 0.f);
+
+			// 일정 속도(도/초)로 회전 → 시작부터 끝까지 균일한 속도
+			const FRotator NewRot = FMath::RInterpConstantTo(GetActorRotation(), Target, DeltaTime, RealignSpeed);
+			SetActorRotation(NewRot);
+
+			// 정면 도달 → 회전 완료 처리
+			if (FMath::Abs(FMath::FindDeltaAngleDegrees(NewRot.Yaw, TargetYaw)) < 1.f)
+			{
+				SetActorRotation(Target);
+				bRealigningToCamera = false;
+				bUseControllerRotationYaw = true;
+			}
+		}
+	}
+
+	// ─── 발사 버튼 유지 중 자동 발사 재개 ───────────────────────────
+	// (자동/수동 재장전 종료 후, 달리기 종료 후 등 모든 경우를 커버.
+	//  WeaponComp->StartFire()는 재장전 중이거나 이미 발사 중이면 무시되므로 매 틱 호출해도 안전)
+	if (bWantsToFire && !bIsSprinting && !IsDead() && WeaponComp)
+	{
+		bool bAimReady = !bRealigningToCamera;
+		if (bRealigningToCamera && Controller)
+		{
+			// 회전 복귀 중에는 정면 기준 FireAlignAngle 이내일 때만 발사
+			bAimReady = FMath::Abs(FMath::FindDeltaAngleDegrees(
+				GetActorRotation().Yaw, Controller->GetControlRotation().Yaw)) < FireAlignAngle;
+		}
+		if (bAimReady)
+			WeaponComp->StartFire();
 	}
 }
 
@@ -108,23 +156,35 @@ void AZombiePlayerCharacter::StartSprint()
 	bIsSprinting = true;
 	GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
 	if (WeaponComp) WeaponComp->StopFire();
+
+	// 달리는 동안에는 이동 방향을 바라보도록 전환 (뒷걸음 달리기 방지)
+	bUseControllerRotationYaw = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	bRealigningToCamera = false;
 }
 
 void AZombiePlayerCharacter::StopSprint()
 {
 	bIsSprinting = false;
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+
+	// 즉시 스냅하지 않고 Tick에서 카메라 방향으로 부드럽게 회전
+	// (회전 완료 후 bUseControllerRotationYaw 복원 + 발사 재개)
+	bRealigningToCamera = true;
 }
 
 // ─── 사격 ─────────────────────────────────────────────────────────────────
 void AZombiePlayerCharacter::StartFire()
 {
-	if (bIsSprinting || IsDead()) return;
+	bWantsToFire = true;
+	if (bIsSprinting || bRealigningToCamera || IsDead()) return; // 회전 완료 후 Tick에서 발사 시작
 	if (WeaponComp) WeaponComp->StartFire();
 }
 
 void AZombiePlayerCharacter::StopFire()
 {
+	bWantsToFire = false;
 	if (WeaponComp) WeaponComp->StopFire();
 }
 

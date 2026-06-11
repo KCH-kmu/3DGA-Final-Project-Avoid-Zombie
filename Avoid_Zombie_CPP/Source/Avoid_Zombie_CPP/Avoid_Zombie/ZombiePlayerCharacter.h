@@ -34,6 +34,7 @@ public:
 	AZombiePlayerCharacter();
 
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 	// ─── 카메라 ─────────────────────────────────────────────────────
@@ -100,6 +101,20 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Movement")
 	float SprintSpeed = 400.f;
+
+	/** 발사 버튼을 누르고 있는지 (달리기 종료 시 발사 재개용) */
+	bool bWantsToFire = false;
+
+	/** 달리기 종료 후 카메라 방향으로 부드럽게 회전 중인지 */
+	bool bRealigningToCamera = false;
+
+	/** 달리기 종료 시 카메라 방향으로 회전하는 속도 (도/초, 일정 속도) */
+	UPROPERTY(EditDefaultsOnly, Category = "Movement")
+	float RealignSpeed = 600.f;
+
+	/** 정면 기준 이 각도(도) 이내로 돌아오면 발사 재개 */
+	UPROPERTY(EditDefaultsOnly, Category = "Movement")
+	float FireAlignAngle = 20.f;
 
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
