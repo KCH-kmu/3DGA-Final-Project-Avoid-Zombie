@@ -20,7 +20,8 @@ public class Avoid_Zombie_CPP : ModuleRules
 			"StateTreeModule",
 			"GameplayStateTreeModule",
 			"UMG",
-			"Slate"
+			"Slate",
+			"GameplayTags"        // Lyra 이식 카메라 모드의 CameraTypeTag용
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });
@@ -41,7 +42,8 @@ public class Avoid_Zombie_CPP : ModuleRules
 			"Avoid_Zombie_CPP/Variant_SideScrolling/Interfaces",
 			"Avoid_Zombie_CPP/Variant_SideScrolling/UI",
 			// ─── Avoid Zombie 게임 ────────────────────────────────────
-			"Avoid_Zombie_CPP/Avoid_Zombie"
+			"Avoid_Zombie_CPP/Avoid_Zombie",
+			"Avoid_Zombie_CPP/Avoid_Zombie/Camera"
 		});
 
 		// Uncomment if you are using Slate UI

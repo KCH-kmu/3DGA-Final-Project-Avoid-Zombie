@@ -3,8 +3,8 @@
 #include "ZombiePlayerCharacter.h"
 #include "WeaponComponent.h"
 #include "ZombieGameMode.h"
-#include "Camera/CameraComponent.h"
-#include "GameFramework/SpringArmComponent.h"
+#include "Camera/ZombieCameraComponent.h"
+#include "Camera/ZombieCameraMode_ThirdPerson.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -15,22 +15,21 @@ AZombiePlayerCharacter::AZombiePlayerCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	// ─── 스프링암 & 카메라 ───────────────────────────────────────────
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 400.f;
-	CameraBoom->bUsePawnControlRotation = true;
+	// ─── 카메라 (Lyra 이식) ─────────────────────────────────────────
+	// 스프링암 없이 카메라 모드 스택이 매 프레임 위치/회전/FOV를 계산
+	CameraComp = CreateDefaultSubobject<UZombieCameraComponent>(TEXT("CameraComp"));
+	CameraComp->SetupAttachment(RootComponent);
 
-	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	FollowCamera->bUsePawnControlRotation = false;
+	DefaultCameraMode = UZombieCameraMode_ThirdPerson::StaticClass();
+	DeathCameraMode   = UZombieCameraMode_Death::StaticClass();
 
 	// ─── 무기 컴포넌트 ──────────────────────────────────────────────
 	WeaponComp = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComp"));
 
 	// ─── 이동 설정 ───────────────────────────────────────────────────
-	// 캐릭터가 카메라 방향(마우스 방향)을 바라보도록 설정
-	bUseControllerRotationYaw   = true;
+	// 캐릭터 회전은 Tick의 FaceAimPoint()가 실제 조준점을 향해 처리
+	// (어깨 오프셋 카메라에서는 카메라 정면과 조준점 방향이 살짝 다름)
+	bUseControllerRotationYaw   = false;
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll  = false;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
@@ -44,6 +43,12 @@ void AZombiePlayerCharacter::BeginPlay()
 	CurrentHealth = MaxHealth;
 	OnHealthChanged.Broadcast(CurrentHealth, MaxHealth);
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+
+	// 카메라 모드 질의 델리게이트 바인딩 (CDO 복제 문제를 피하기 위해 런타임에 바인딩)
+	if (CameraComp)
+	{
+		CameraComp->DetermineCameraModeDelegate.BindUObject(this, &AZombiePlayerCharacter::DetermineCameraMode);
+	}
 
 	// Enhanced Input 매핑 컨텍스트 등록
 	if (APlayerController* PC = Cast<APlayerController>(GetController()))
@@ -77,14 +82,20 @@ void AZombiePlayerCharacter::Tick(float DeltaTime)
 			const FRotator NewRot = FMath::RInterpConstantTo(GetActorRotation(), Target, DeltaTime, RealignSpeed);
 			SetActorRotation(NewRot);
 
-			// 정면 도달 → 회전 완료 처리
+			// 정면 도달 → 회전 완료 처리 (이후 FaceAimPoint가 이어받음)
 			if (FMath::Abs(FMath::FindDeltaAngleDegrees(NewRot.Yaw, TargetYaw)) < 1.f)
 			{
 				SetActorRotation(Target);
 				bRealigningToCamera = false;
-				bUseControllerRotationYaw = true;
 			}
 		}
+	}
+
+	// ─── 조준점 바라보기 ─────────────────────────────────────────────
+	// 어깨 오프셋 카메라 기준, 크로스헤어가 실제로 가리키는 지점을 향해 회전
+	if (!bIsSprinting && !bRealigningToCamera && !IsDead())
+	{
+		FaceAimPoint(DeltaTime);
 	}
 
 	// ─── 발사 버튼 유지 중 자동 발사 재개 ───────────────────────────
@@ -131,6 +142,45 @@ void AZombiePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 	}
 }
 
+// ─── 카메라 모드 결정 ─────────────────────────────────────────────────────
+TSubclassOf<UZombieCameraMode> AZombiePlayerCharacter::DetermineCameraMode() const
+{
+	// 사망 시 게임오버 UI 뒤에서 카메라가 천천히 멀어지는 연출
+	if (IsDead() && DeathCameraMode)
+	{
+		return DeathCameraMode;
+	}
+	return DefaultCameraMode;
+}
+
+// ─── 조준점 바라보기 ──────────────────────────────────────────────────────
+void AZombiePlayerCharacter::FaceAimPoint(float DeltaTime)
+{
+	if (!CameraComp || !Controller) return;
+
+	// 무기(WeaponComponent::PerformLineTrace)와 동일한 트레이스로 실제 조준점 계산
+	const FVector Start = CameraComp->GetComponentLocation();
+	const FVector End   = Start + CameraComp->GetForwardVector() * AimTraceDistance;
+
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
+	FHitResult Hit;
+	FVector AimPoint = End;
+	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Pawn, Params))
+	{
+		AimPoint = Hit.ImpactPoint;
+	}
+
+	// 수평(Yaw)만 조준점을 향해 회전
+	FVector ToAim = AimPoint - GetActorLocation();
+	ToAim.Z = 0.f;
+	if (ToAim.SizeSquared() < KINDA_SMALL_NUMBER) return;
+
+	const FRotator TargetRot(0.f, ToAim.Rotation().Yaw, 0.f);
+	SetActorRotation(FMath::RInterpTo(GetActorRotation(), TargetRot, DeltaTime, AimFaceInterpSpeed));
+}
+
 // ─── 이동 / 카메라 ────────────────────────────────────────────────────────
 void AZombiePlayerCharacter::Move(const FInputActionValue& Value)
 {
@@ -158,7 +208,6 @@ void AZombiePlayerCharacter::StartSprint()
 	if (WeaponComp) WeaponComp->StopFire();
 
 	// 달리는 동안에는 이동 방향을 바라보도록 전환 (뒷걸음 달리기 방지)
-	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	bRealigningToCamera = false;
 }

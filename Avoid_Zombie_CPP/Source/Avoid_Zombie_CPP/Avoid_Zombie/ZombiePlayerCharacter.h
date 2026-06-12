@@ -4,10 +4,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
+#include "Templates/SubclassOf.h"
 #include "ZombiePlayerCharacter.generated.h"
 
-class USpringArmComponent;
-class UCameraComponent;
+class UZombieCameraComponent;
+class UZombieCameraMode;
 class UWeaponComponent;
 class UInputMappingContext;
 class UInputAction;
@@ -37,12 +38,17 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
-	// ─── 카메라 ─────────────────────────────────────────────────────
+	// ─── 카메라 (Lyra 이식: 카메라 모드 스택 기반, 스프링암 없음) ───
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	TObjectPtr<USpringArmComponent> CameraBoom;
+	TObjectPtr<UZombieCameraComponent> CameraComp;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	TObjectPtr<UCameraComponent> FollowCamera;
+	/** 평상시 카메라 모드 */
+	UPROPERTY(EditDefaultsOnly, Category = "Camera")
+	TSubclassOf<UZombieCameraMode> DefaultCameraMode;
+
+	/** 사망 시 카메라 모드 (게임오버 UI 배경 연출용, 미지정 시 평상시 모드 유지) */
+	UPROPERTY(EditDefaultsOnly, Category = "Camera")
+	TSubclassOf<UZombieCameraMode> DeathCameraMode;
 
 	// ─── 무기 컴포넌트 ──────────────────────────────────────────────
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
@@ -115,6 +121,20 @@ protected:
 	/** 정면 기준 이 각도(도) 이내로 돌아오면 발사 재개 */
 	UPROPERTY(EditDefaultsOnly, Category = "Movement")
 	float FireAlignAngle = 20.f;
+
+	/** 조준점 계산용 트레이스 거리 (무기 사거리와 동일하게) */
+	UPROPERTY(EditDefaultsOnly, Category = "Aim")
+	float AimTraceDistance = 10000.f;
+
+	/** 조준점을 향해 캐릭터가 회전하는 보간 속도 */
+	UPROPERTY(EditDefaultsOnly, Category = "Aim")
+	float AimFaceInterpSpeed = 20.f;
+
+	/** 어깨 오프셋 카메라 기준 실제 조준점(크로스헤어가 가리키는 곳)을 바라보도록 회전 */
+	void FaceAimPoint(float DeltaTime);
+
+	/** 카메라 컴포넌트가 매 프레임 묻는 현재 카메라 모드 (사망 시 DeathCameraMode 반환) */
+	TSubclassOf<UZombieCameraMode> DetermineCameraMode() const;
 
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);

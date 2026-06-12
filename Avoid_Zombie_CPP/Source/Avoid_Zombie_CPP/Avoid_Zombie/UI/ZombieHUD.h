@@ -17,6 +17,9 @@ public:
 
 	virtual void BeginPlay() override;
 
+	/** 화면 중심 크로스헤어 드로잉 */
+	virtual void DrawHUD() override;
+
 	/** 탄약 갱신 */
 	UFUNCTION() void OnAmmoChanged(int32 Current, int32 Max);
 
@@ -38,6 +41,27 @@ public:
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "HUD")
 	TSubclassOf<UZombieHUDWidget> HUDWidgetClass;
+
+	// ─── 크로스헤어 설정 ────────────────────────────────────────────
+	/** 선 길이 */
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|Crosshair")
+	float CrosshairSize = 8.f;
+
+	/** 중심에서 선까지 간격 */
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|Crosshair")
+	float CrosshairGap = 6.f;
+
+	/** 선 두께 */
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|Crosshair")
+	float CrosshairThickness = 2.f;
+
+	/** 기본 색상 */
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|Crosshair")
+	FLinearColor CrosshairColor = FLinearColor::White;
+
+	/** 달리기 중(공격 불가) 크로스헤어 투명도 */
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|Crosshair")
+	float SprintCrosshairAlpha = 0.25f;
 
 private:
 	UPROPERTY()

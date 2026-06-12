@@ -2,6 +2,7 @@
 
 #include "ZombieHUD.h"
 #include "ZombieHUDWidget.h"
+#include "Engine/Canvas.h"
 #include "../WeaponComponent.h"
 #include "../ZombiePlayerCharacter.h"
 #include "../ZombieGameState.h"
@@ -49,6 +50,37 @@ void AZombieHUD::BeginPlay()
 		OnKillsChanged(GS->TotalKills);
 		OnWaveChanged(GS->CurrentWave);
 	}
+}
+
+// ─── 크로스헤어 ───────────────────────────────────────────────────────────
+void AZombieHUD::DrawHUD()
+{
+	Super::DrawHUD();
+	if (!Canvas) return;
+
+	AZombiePlayerCharacter* Player = Cast<AZombiePlayerCharacter>(GetOwningPawn());
+
+	// 사망(게임오버) 시 크로스헤어 숨김
+	if (Player && Player->IsDead()) return;
+
+	// 달리기 중에는 공격 불가 → 흐리게 표시
+	FLinearColor Color = CrosshairColor;
+	if (Player && Player->bIsSprinting)
+	{
+		Color.A *= SprintCrosshairAlpha;
+	}
+
+	const float CX = Canvas->ClipX * 0.5f;
+	const float CY = Canvas->ClipY * 0.5f;
+
+	// 상 / 하 / 좌 / 우 4선
+	DrawLine(CX, CY - CrosshairGap, CX, CY - CrosshairGap - CrosshairSize, Color, CrosshairThickness);
+	DrawLine(CX, CY + CrosshairGap, CX, CY + CrosshairGap + CrosshairSize, Color, CrosshairThickness);
+	DrawLine(CX - CrosshairGap, CY, CX - CrosshairGap - CrosshairSize, CY, Color, CrosshairThickness);
+	DrawLine(CX + CrosshairGap, CY, CX + CrosshairGap + CrosshairSize, CY, Color, CrosshairThickness);
+
+	// 중심점
+	DrawRect(Color, CX - 1.f, CY - 1.f, 2.f, 2.f);
 }
 
 void AZombieHUD::OnAmmoChanged(int32 Current, int32 Max)
