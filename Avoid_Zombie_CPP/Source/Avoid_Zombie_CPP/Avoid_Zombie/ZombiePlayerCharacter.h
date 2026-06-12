@@ -75,6 +75,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Health")
 	bool IsDead() const { return CurrentHealth <= 0.f; }
 
+	/** 현재 발사 가능한 상태인지 (사망/달리기/복귀 회전 중이면 불가) — HUD 표시용 */
+	UFUNCTION(BlueprintPure, Category = "Weapon")
+	bool CanFire() const { return !IsDead() && !bIsSprinting && !bRealigningToCamera; }
+
 	// ─── 이동 상태 ──────────────────────────────────────────────────
 	UPROPERTY(BlueprintReadOnly, Category = "Movement")
 	bool bIsSprinting = false;
