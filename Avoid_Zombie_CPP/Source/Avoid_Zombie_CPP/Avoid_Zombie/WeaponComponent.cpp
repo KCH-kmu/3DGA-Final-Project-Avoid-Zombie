@@ -36,7 +36,9 @@ void UWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	if (bIsReloading)
 	{
 		ReloadTimer -= DeltaTime;
-		ReloadProgress = 1.f - FMath::Clamp(ReloadTimer / GetCurrentReloadTime(), 0.f, 1.f);
+		// 분모는 재장전 시작 때 고정한 값 사용 (몽타주 재생속도·완료시점과 일치)
+		const float Denom = (CurrentReloadDuration > 0.f) ? CurrentReloadDuration : GetCurrentReloadTime();
+		ReloadProgress = 1.f - FMath::Clamp(ReloadTimer / Denom, 0.f, 1.f);
 		if (ReloadTimer <= 0.f) FinishReload();
 		return;
 	}
@@ -75,6 +77,7 @@ void UWeaponComponent::FireOnce()
 	CurrentAmmo--;
 	OnAmmoChanged.Broadcast(CurrentAmmo, MaxAmmo);
 	PerformLineTrace();
+	OnWeaponFired.Broadcast(); // 발사 몽타주 재생 트리거 (캐릭터가 바인딩)
 
 	FireTimer = (GetCurrentRPS() > 0.f) ? (1.f / GetCurrentRPS()) : 0.1f;
 
@@ -132,9 +135,11 @@ void UWeaponComponent::PerformLineTrace()
 void UWeaponComponent::StartReload()
 {
 	if (bIsReloading || CurrentAmmo >= MaxAmmo) return;
-	bIsReloading   = true;
-	ReloadProgress = 0.f;
-	ReloadTimer    = GetCurrentReloadTime();
+	bIsReloading          = true;
+	ReloadProgress        = 0.f;
+	ReloadTimer           = GetCurrentReloadTime();
+	CurrentReloadDuration = ReloadTimer; // 진행률 분모로 고정 (도중 버프 만료와 무관)
+	OnReloadStarted.Broadcast(ReloadTimer); // 재장전 몽타주 재생 트리거 (수동/자동 모두 이 경로)
 	UE_LOG(LogTemp, Log, TEXT("[Weapon] 재장전 시작 (%.1f초)"), ReloadTimer);
 }
 

@@ -18,6 +18,12 @@ enum class EItemType : uint8
 /** 탄약 변경 델리게이트 (현재 탄약, 최대 탄약) */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAmmoChanged, int32, CurrentAmmo, int32, MaxAmmo);
 
+/** 발사 1회 발생 델리게이트 (캐릭터 발사 몽타주 재생용) */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWeaponFired);
+
+/** 재장전 시작 델리게이트 (ReloadTime = 이번 재장전 소요 시간, 초) */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnReloadStarted, float, ReloadTime);
+
 /**
  * 무기 컴포넌트 (AR)
  *
@@ -45,6 +51,14 @@ public:
 	/** 탄약 수 변경 시 broadcast (HUD 갱신용) */
 	UPROPERTY(BlueprintAssignable, Category = "Weapon")
 	FOnAmmoChanged OnAmmoChanged;
+
+	/** 발사 1회 발생 시 broadcast (발사 몽타주용) */
+	UPROPERTY(BlueprintAssignable, Category = "Weapon")
+	FOnWeaponFired OnWeaponFired;
+
+	/** 재장전 시작 시 broadcast (재장전 몽타주용) */
+	UPROPERTY(BlueprintAssignable, Category = "Weapon")
+	FOnReloadStarted OnReloadStarted;
 
 	// ─── 탄약 상태 ──────────────────────────────────────────────────
 	UPROPERTY(BlueprintReadOnly, Category = "Weapon")
@@ -109,11 +123,13 @@ protected:
 	float BuffDuration = 5.f;
 
 private:
-	bool  bIsFiring       = false;
-	bool  bIsFireRateBuff = false;
-	float FireTimer       = 0.f;
-	float ReloadTimer     = 0.f;
-	float BuffTimer       = 0.f;
+	bool  bIsFiring             = false;
+	bool  bIsFireRateBuff       = false;
+	float FireTimer             = 0.f;
+	float ReloadTimer           = 0.f;
+	/** 재장전 시작 시점에 고정한 총 소요 시간 (진행률 분모 — 도중 버프 만료 시 desync 방지) */
+	float CurrentReloadDuration = 0.f;
+	float BuffTimer             = 0.f;
 
 	void FireOnce();
 	void FinishReload();

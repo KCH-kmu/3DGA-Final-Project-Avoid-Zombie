@@ -6,6 +6,8 @@
 #include "Camera/ZombieCameraComponent.h"
 #include "Camera/ZombieCameraMode_ThirdPerson.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Animation/AnimMontage.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
@@ -26,6 +28,13 @@ AZombiePlayerCharacter::AZombiePlayerCharacter()
 	// ─── 무기 컴포넌트 ──────────────────────────────────────────────
 	WeaponComp = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComp"));
 
+	// ─── 무기 비주얼 메시 (오른손 본에 부착되는 소총) ───────────────
+	// 메시(SM_Rifle_Olive)와 정확한 소켓/위치는 BP에서 컴포넌트 단위로 보정
+	WeaponMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMeshComp"));
+	WeaponMeshComp->SetupAttachment(GetMesh(), TEXT("hand_r"));
+	WeaponMeshComp->SetCollisionProfileName(TEXT("NoCollision"));
+	WeaponMeshComp->SetGenerateOverlapEvents(false);
+
 	// ─── 이동 설정 ───────────────────────────────────────────────────
 	// 캐릭터 회전은 Tick의 FaceAimPoint()가 실제 조준점을 향해 처리
 	// (어깨 오프셋 카메라에서는 카메라 정면과 조준점 방향이 살짝 다름)
@@ -43,6 +52,13 @@ void AZombiePlayerCharacter::BeginPlay()
 	CurrentHealth = MaxHealth;
 	OnHealthChanged.Broadcast(CurrentHealth, MaxHealth);
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+
+	// ─── 발사/재장전 몽타주 델리게이트 바인딩 ──────────────────────
+	if (WeaponComp)
+	{
+		WeaponComp->OnWeaponFired.AddDynamic(this, &AZombiePlayerCharacter::HandleWeaponFired);
+		WeaponComp->OnReloadStarted.AddDynamic(this, &AZombiePlayerCharacter::HandleReloadStarted);
+	}
 
 	// 카메라 모드 질의 델리게이트 바인딩 (CDO 복제 문제를 피하기 위해 런타임에 바인딩)
 	if (CameraComp)
@@ -246,6 +262,46 @@ void AZombiePlayerCharacter::Reload()
 void AZombiePlayerCharacter::UseItem()
 {
 	if (!IsDead() && WeaponComp) WeaponComp->UseHeldItem();
+}
+
+// ─── 무장 애니메이션 ────────────────────────────────────────────────────────
+void AZombiePlayerCharacter::HandleWeaponFired()
+{
+	if (FireMontage)
+	{
+		// RPS가 높으면 몽타주가 끝나기 전 재시작될 수 있음 (최소 구성의 의도된 한계)
+		PlayAnimMontage(FireMontage);
+	}
+}
+
+void AZombiePlayerCharacter::HandleReloadStarted(float ReloadTime)
+{
+	if (!ReloadMontage) return;
+
+	// 몽타주 길이를 실제 재장전 시간(기본 2초 / 버프 1초)에 맞추도록 재생속도 보정
+	const float Length = ReloadMontage->GetPlayLength();
+	const float Rate   = (ReloadTime > 0.f && Length > 0.f) ? (Length / ReloadTime) : 1.f;
+	PlayAnimMontage(ReloadMontage, Rate);
+}
+
+// ─── AnimBP용 조준/상태 헬퍼 ────────────────────────────────────────────────
+float AZombiePlayerCharacter::GetAimPitch() const
+{
+	if (!Controller) return 0.f;
+	// 컨트롤 회전 Pitch를 -180~180으로 정규화 (위/아래 조준 → Aim Offset 세로축)
+	return FRotator::NormalizeAxis(Controller->GetControlRotation().Pitch);
+}
+
+float AZombiePlayerCharacter::GetAimYaw() const
+{
+	if (!Controller) return 0.f;
+	// 조준 방향과 캐릭터 정면의 좌우 차이 (-180~180 → Aim Offset 가로축)
+	return FRotator::NormalizeAxis(Controller->GetControlRotation().Yaw - GetActorRotation().Yaw);
+}
+
+bool AZombiePlayerCharacter::IsReloading() const
+{
+	return WeaponComp && WeaponComp->bIsReloading;
 }
 
 // ─── 체력 ─────────────────────────────────────────────────────────────────

@@ -12,6 +12,8 @@ class UZombieCameraMode;
 class UWeaponComponent;
 class UInputMappingContext;
 class UInputAction;
+class UStaticMeshComponent;
+class UAnimMontage;
 
 /** 체력 변경 델리게이트 (현재 체력, 최대 체력) */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, float, CurrentHealth, float, MaxHealth);
@@ -54,6 +56,21 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TObjectPtr<UWeaponComponent> WeaponComp;
 
+	// ─── 무기 비주얼 메시 (손에 부착되는 소총) ──────────────────────
+	// 생성자에서 hand_r 본에 부착됨. 정확한 소켓/위치는 BP에서
+	// 이 컴포넌트의 Parent Socket·Transform으로 조정 (뷰포트에 그대로 반영됨)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	TObjectPtr<UStaticMeshComponent> WeaponMeshComp;
+
+	// ─── 무장 애니메이션 몽타주 (에디터에서 할당) ──────────────────
+	/** 발사 시 재생할 몽타주 (예: AM_Rifle_Fire) */
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	TObjectPtr<UAnimMontage> FireMontage;
+
+	/** 재장전 시 재생할 몽타주 (예: AM_Rifle_Reload, 길이는 재장전 시간에 맞춰 자동 보정) */
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	TObjectPtr<UAnimMontage> ReloadMontage;
+
 	// ─── 체력 델리게이트 ────────────────────────────────────────────
 	/** 체력 변경 시 broadcast (HUD 갱신용) */
 	UPROPERTY(BlueprintAssignable, Category = "Health")
@@ -78,6 +95,19 @@ public:
 	/** 현재 발사 가능한 상태인지 (사망/달리기/복귀 회전 중이면 불가) — HUD 표시용 */
 	UFUNCTION(BlueprintPure, Category = "Weapon")
 	bool CanFire() const { return !IsDead() && !bIsSprinting && !bRealigningToCamera; }
+
+	// ─── AnimBP용 조준/상태 헬퍼 (Aim Offset·블렌드 배선용) ─────────
+	/** 조준 상하각: 컨트롤 회전 Pitch (-90~90). Aim Offset 세로축에 연결 */
+	UFUNCTION(BlueprintPure, Category = "Aim")
+	float GetAimPitch() const;
+
+	/** 조준 좌우각: 컨트롤 회전 Yaw - 액터 Yaw (-180~180). Aim Offset 가로축에 연결 */
+	UFUNCTION(BlueprintPure, Category = "Aim")
+	float GetAimYaw() const;
+
+	/** 재장전 중인지 (AnimBP 상체 블렌드 조건용) */
+	UFUNCTION(BlueprintPure, Category = "Weapon")
+	bool IsReloading() const;
 
 	// ─── 이동 상태 ──────────────────────────────────────────────────
 	UPROPERTY(BlueprintReadOnly, Category = "Movement")
@@ -149,6 +179,15 @@ protected:
 	void Reload();
 	void UseItem();
 	void Die();
+
+	// ─── 무장 애니메이션 이벤트 핸들러 (WeaponComp 델리게이트 바인딩) ──
+	/** 발사 1회 시 발사 몽타주 재생 */
+	UFUNCTION()
+	void HandleWeaponFired();
+
+	/** 재장전 시작 시 재장전 몽타주 재생 (재장전 시간에 맞춰 재생속도 보정) */
+	UFUNCTION()
+	void HandleReloadStarted(float ReloadTime);
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Health")
 	void OnDeath();
