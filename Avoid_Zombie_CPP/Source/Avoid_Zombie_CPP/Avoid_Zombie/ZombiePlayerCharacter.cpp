@@ -7,6 +7,7 @@
 #include "Camera/ZombieCameraMode_ThirdPerson.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Animation/AnimMontage.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -52,6 +53,12 @@ void AZombiePlayerCharacter::BeginPlay()
 	CurrentHealth = MaxHealth;
 	OnHealthChanged.Broadcast(CurrentHealth, MaxHealth);
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+
+	// ─── 무기 메시 기본 그립 회전 저장 (총기 피치의 기준값) ─────────
+	if (WeaponMeshComp)
+	{
+		WeaponRestRelativeRotation = WeaponMeshComp->GetRelativeRotation();
+	}
 
 	// ─── 발사/재장전 몽타주 델리게이트 바인딩 ──────────────────────
 	if (WeaponComp)
@@ -107,17 +114,26 @@ void AZombiePlayerCharacter::Tick(float DeltaTime)
 		}
 	}
 
-	// ─── 조준점 바라보기 ─────────────────────────────────────────────
-	// 어깨 오프셋 카메라 기준, 크로스헤어가 실제로 가리키는 지점을 향해 회전
-	if (!bIsSprinting && !bRealigningToCamera && !IsDead())
+	// ─── 캐릭터 회전 ─────────────────────────────────────────────────
+	// 달리기: 이동(속도) 방향을 정면으로 (키보드 방향 정면 달리기 → 하체 Direction 0)
+	// 평상시: 어깨 오프셋 카메라 기준 크로스헤어가 가리키는 지점을 향해 회전
+	if (!bRealigningToCamera && !IsDead())
 	{
-		FaceAimPoint(DeltaTime);
+		if (bIsSprinting)
+			FaceMovementDirection(DeltaTime);
+		else
+			FaceAimPoint(DeltaTime);
 	}
 
 	// ─── 발사 버튼 유지 중 자동 발사 재개 ───────────────────────────
 	// (자동/수동 재장전 종료 후, 달리기 종료 후 등 모든 경우를 커버.
 	//  WeaponComp->StartFire()는 재장전 중이거나 이미 발사 중이면 무시되므로 매 틱 호출해도 안전)
-	if (bWantsToFire && !bIsSprinting && !IsDead() && WeaponComp)
+	if ((IsInAir() || IsAimBlocked()) && WeaponComp)
+	{
+		// 공중(낙하/점프)이거나 과도한 조준각이면 발사 중단 — 정상 상태 복귀 시 bWantsToFire로 자동 재개
+		WeaponComp->StopFire();
+	}
+	else if (bWantsToFire && !bIsSprinting && !IsDead() && WeaponComp)
 	{
 		bool bAimReady = !bRealigningToCamera;
 		if (bRealigningToCamera && Controller)
@@ -128,6 +144,29 @@ void AZombiePlayerCharacter::Tick(float DeltaTime)
 		}
 		if (bAimReady)
 			WeaponComp->StartFire();
+	}
+
+	// ─── 총기만 시점(상하)에 따라 기울이기 ──────────────────────────
+	// 조준 수평방향의 오른쪽(수평) 축을 기준으로 소총을 통째로 상하 회전 →
+	// 배럴이 깔끔하게 위/아래로만 향함(롤/좌우 흔들림 없음). 왼손 IK도 자연스럽게 따라감.
+	// (재장전/사망 중에는 기울이지 않고 손 애니를 그대로 따라감)
+	if (WeaponMeshComp && GetMesh())
+	{
+		const FQuat HandWorld = GetMesh()->GetSocketQuaternion(TEXT("hand_r"));
+		const FQuat RestWorld = HandWorld * WeaponRestRelativeRotation.Quaternion();
+
+		if (!IsReloading() && !IsDead())
+		{
+			// 몸(actor) 오른쪽 축 기준으로 기울임 → 가파른 각도에서 몸이 멈추면(FaceAimPoint 정지)
+			// 총/왼손도 함께 멈춤. 조준각은 위/아래 따로 제한(위는 더 작게).
+			const float LookPitch = FMath::Clamp(GetAimPitch(), -MaxAimPitchDown, MaxAimPitchUp);
+			const float PitchRad  = FMath::DegreesToRadians(LookPitch * GunPitchScale);
+			WeaponMeshComp->SetWorldRotation(FQuat(GetActorRightVector(), PitchRad) * RestWorld);
+		}
+		else
+		{
+			WeaponMeshComp->SetWorldRotation(RestWorld);
+		}
 	}
 }
 
@@ -174,6 +213,9 @@ void AZombiePlayerCharacter::FaceAimPoint(float DeltaTime)
 {
 	if (!CameraComp || !Controller) return;
 
+	// 과도한 조준각(위/아래)에서는 몸 회전을 멈춤 → 시점을 돌려도 총·팔이 안 흔들리고 고정됨
+	if (IsAimBlocked()) return;
+
 	// 무기(WeaponComponent::PerformLineTrace)와 동일한 트레이스로 실제 조준점 계산
 	const FVector Start = CameraComp->GetComponentLocation();
 	const FVector End   = Start + CameraComp->GetForwardVector() * AimTraceDistance;
@@ -191,10 +233,23 @@ void AZombiePlayerCharacter::FaceAimPoint(float DeltaTime)
 	// 수평(Yaw)만 조준점을 향해 회전
 	FVector ToAim = AimPoint - GetActorLocation();
 	ToAim.Z = 0.f;
-	if (ToAim.SizeSquared() < KINDA_SMALL_NUMBER) return;
+	// 조준점이 거의 발밑/머리 위(수평성분이 작음)면 방향이 불안정해 캐릭터가 스핀하므로 회전 생략
+	if (ToAim.SizeSquared() < FMath::Square(80.f)) return;
 
 	const FRotator TargetRot(0.f, ToAim.Rotation().Yaw, 0.f);
 	SetActorRotation(FMath::RInterpTo(GetActorRotation(), TargetRot, DeltaTime, AimFaceInterpSpeed));
+}
+
+// ─── 달리기 중 이동 방향 바라보기 ──────────────────────────────────────────
+void AZombiePlayerCharacter::FaceMovementDirection(float DeltaTime)
+{
+	// 실제 속도(이동) 방향을 정면으로 → 키보드 방향 정면 달리기, 하체 Direction 0
+	FVector Vel = GetVelocity();
+	Vel.Z = 0.f;
+	if (Vel.SizeSquared() < 10.f) return; // 거의 정지 상태면 현재 방향 유지
+
+	const FRotator Target(0.f, Vel.Rotation().Yaw, 0.f);
+	SetActorRotation(FMath::RInterpTo(GetActorRotation(), Target, DeltaTime, SprintFaceInterpSpeed));
 }
 
 // ─── 이동 / 카메라 ────────────────────────────────────────────────────────
@@ -223,8 +278,8 @@ void AZombiePlayerCharacter::StartSprint()
 	GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
 	if (WeaponComp) WeaponComp->StopFire();
 
-	// 달리는 동안에는 이동 방향을 바라보도록 전환 (뒷걸음 달리기 방지)
-	GetCharacterMovement()->bOrientRotationToMovement = true;
+	// 달리는 동안 Tick의 FaceMovementDirection()이 이동 방향을 바라보도록 처리
+	// (엔진 bOrientRotationToMovement 대신 직접 회전 → 키보드 방향 정면 달리기 보장)
 	bRealigningToCamera = false;
 }
 
@@ -232,7 +287,6 @@ void AZombiePlayerCharacter::StopSprint()
 {
 	bIsSprinting = false;
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
-	GetCharacterMovement()->bOrientRotationToMovement = false;
 
 	// 즉시 스냅하지 않고 Tick에서 카메라 방향으로 부드럽게 회전
 	// (회전 완료 후 bUseControllerRotationYaw 복원 + 발사 재개)
@@ -243,7 +297,7 @@ void AZombiePlayerCharacter::StopSprint()
 void AZombiePlayerCharacter::StartFire()
 {
 	bWantsToFire = true;
-	if (bIsSprinting || bRealigningToCamera || IsDead()) return; // 회전 완료 후 Tick에서 발사 시작
+	if (bIsSprinting || bRealigningToCamera || IsDead() || IsInAir() || IsAimBlocked()) return; // 회전 완료/착지/정상 조준각 복귀 후 Tick에서 발사 시작
 	if (WeaponComp) WeaponComp->StartFire();
 }
 
@@ -302,6 +356,22 @@ float AZombiePlayerCharacter::GetAimYaw() const
 bool AZombiePlayerCharacter::IsReloading() const
 {
 	return WeaponComp && WeaponComp->bIsReloading;
+}
+
+FTransform AZombiePlayerCharacter::GetLeftHandIKTransform() const
+{
+	// 소총의 왼손 그립 소켓 월드 트랜스폼 → AnimBP가 왼손을 여기에 IK로 붙임
+	// (총기가 C++에서 상하로 기울면 이 소켓도 같이 움직여 왼손이 따라감)
+	if (WeaponMeshComp && WeaponMeshComp->DoesSocketExist(TEXT("LeftHandGrip")))
+	{
+		return WeaponMeshComp->GetSocketTransform(TEXT("LeftHandGrip"));
+	}
+	return FTransform::Identity;
+}
+
+bool AZombiePlayerCharacter::IsInAir() const
+{
+	return GetCharacterMovement() && GetCharacterMovement()->IsFalling();
 }
 
 // ─── 체력 ─────────────────────────────────────────────────────────────────

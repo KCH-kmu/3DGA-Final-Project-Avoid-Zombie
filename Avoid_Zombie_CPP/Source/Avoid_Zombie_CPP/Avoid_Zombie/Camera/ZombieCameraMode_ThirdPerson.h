@@ -59,6 +59,19 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Third Person")
 	float CrouchOffsetBlendMultiplier = 5.0f;
 
+	// ─── 이동(허리 숙임) 따라가기 ──────────────────────────────────
+	/** 완전 이동 시 카메라 피벗을 이만큼(cm) 아래로 내림 (0이면 비활성) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement Follow")
+	float MoveBendOffsetZ = 15.0f;
+
+	/** 이 속도(cm/s)에서 최대 하강, 이하 속도는 비례 적용 (보통 걷기 속도 부근) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement Follow")
+	float MoveBendReferenceSpeed = 180.0f;
+
+	/** 하강/복귀 보간 속도 (클수록 빠름) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement Follow")
+	float MoveBendBlendSpeed = 6.0f;
+
 	// 관통 방지
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Collision")
@@ -109,6 +122,10 @@ protected:
 	FVector TargetCrouchOffset = FVector::ZeroVector;
 	float CrouchOffsetBlendPct = 1.0f;
 	FVector CurrentCrouchOffset = FVector::ZeroVector;
+
+	// 이동(허리 숙임)에 맞춘 카메라 하강 — 현재 적용 중인 Z 오프셋(보간값)
+	void UpdateMoveBendOffset(float DeltaTime);
+	float CurrentMoveBendZ = 0.0f;
 
 };
 

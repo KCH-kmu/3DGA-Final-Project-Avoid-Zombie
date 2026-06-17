@@ -9,6 +9,7 @@
 #include "ZombieCameraAssistInterface.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Math/RotationMatrix.h"
 #include "Animation/AnimTypes.h"
 
@@ -50,8 +51,9 @@ void UZombieCameraMode_ThirdPerson::UpdateView(float DeltaTime)
 {
 	UpdateForTarget(DeltaTime);
 	UpdateCrouchOffset(DeltaTime);
+	UpdateMoveBendOffset(DeltaTime);
 
-	FVector PivotLocation = GetPivotLocation() + CurrentCrouchOffset;
+	FVector PivotLocation = GetPivotLocation() + CurrentCrouchOffset + FVector(0.f, 0.f, CurrentMoveBendZ);
 	FRotator PivotRotation = GetPivotRotation();
 
 	PivotRotation.Pitch = FMath::ClampAngle(PivotRotation.Pitch, ViewPitchMin, ViewPitchMax);
@@ -348,6 +350,25 @@ void UZombieCameraMode_ThirdPerson::PreventCameraPenetration(class AActor const&
 	{
 		CameraLoc = SafeLoc + (CameraLoc - SafeLoc) * DistBlockedPct;
 	}
+}
+
+void UZombieCameraMode_ThirdPerson::UpdateMoveBendOffset(float DeltaTime)
+{
+	// 이동 속도에 비례해 카메라 피벗을 부드럽게 내려, 무장 이동 시 허리 숙임을 따라간다.
+	// (높이만 조정 — 피치를 바꾸면 카메라 정면=조준 방향이라 크로스헤어가 틀어짐)
+	float TargetZ = 0.f;
+	if (const ACharacter* TargetCharacter = Cast<ACharacter>(GetTargetActor()))
+	{
+		const UCharacterMovementComponent* Move = TargetCharacter->GetCharacterMovement();
+		const bool bGrounded = Move ? !Move->IsFalling() : true;
+		if (bGrounded && MoveBendReferenceSpeed > 0.f)
+		{
+			const float Speed2D = TargetCharacter->GetVelocity().Size2D();
+			const float Alpha   = FMath::Clamp(Speed2D / MoveBendReferenceSpeed, 0.f, 1.f);
+			TargetZ = -MoveBendOffsetZ * Alpha; // 아래로
+		}
+	}
+	CurrentMoveBendZ = FMath::FInterpTo(CurrentMoveBendZ, TargetZ, DeltaTime, MoveBendBlendSpeed);
 }
 
 void UZombieCameraMode_ThirdPerson::SetTargetCrouchOffset(FVector NewTargetOffset)

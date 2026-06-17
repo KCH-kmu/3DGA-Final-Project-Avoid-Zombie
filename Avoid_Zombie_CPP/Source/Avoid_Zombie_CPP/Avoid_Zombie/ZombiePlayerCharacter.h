@@ -92,9 +92,17 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Health")
 	bool IsDead() const { return CurrentHealth <= 0.f; }
 
-	/** 현재 발사 가능한 상태인지 (사망/달리기/복귀 회전 중이면 불가) — HUD 표시용 */
+	/** 현재 발사 가능한 상태인지 (사망/달리기/복귀 회전/공중/과도한 조준각이면 불가) — HUD 표시용 */
 	UFUNCTION(BlueprintPure, Category = "Weapon")
-	bool CanFire() const { return !IsDead() && !bIsSprinting && !bRealigningToCamera; }
+	bool CanFire() const { return !IsDead() && !bIsSprinting && !bRealigningToCamera && !IsInAir() && !IsAimBlocked(); }
+
+	/** 공중(낙하/점프) 상태인지 — 공중에서는 발사 불가 */
+	UFUNCTION(BlueprintPure, Category = "Movement")
+	bool IsInAir() const;
+
+	/** 위/아래를 허용각보다 가파르게 보면 true → 총기 기울기 정지 + 발사 불가 (위/아래 각도 분리) */
+	UFUNCTION(BlueprintPure, Category = "Aim")
+	bool IsAimBlocked() const { const float P = GetAimPitch(); return P > MaxAimPitchUp || P < -MaxAimPitchDown; }
 
 	// ─── AnimBP용 조준/상태 헬퍼 (Aim Offset·블렌드 배선용) ─────────
 	/** 조준 상하각: 컨트롤 회전 Pitch (-90~90). Aim Offset 세로축에 연결 */
@@ -108,6 +116,10 @@ public:
 	/** 재장전 중인지 (AnimBP 상체 블렌드 조건용) */
 	UFUNCTION(BlueprintPure, Category = "Weapon")
 	bool IsReloading() const;
+
+	/** 왼손 IK 타겟 — 소총 'LeftHandGrip' 소켓의 월드 트랜스폼 (AnimBP Two Bone IK 이펙터용) */
+	UFUNCTION(BlueprintPure, Category = "Aim")
+	FTransform GetLeftHandIKTransform() const;
 
 	// ─── 이동 상태 ──────────────────────────────────────────────────
 	UPROPERTY(BlueprintReadOnly, Category = "Movement")
@@ -164,8 +176,30 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Aim")
 	float AimFaceInterpSpeed = 20.f;
 
+	/** 달리기 중 이동(속도) 방향을 바라보는 회전 보간 속도 */
+	UPROPERTY(EditDefaultsOnly, Category = "Movement")
+	float SprintFaceInterpSpeed = 10.f;
+
+	/** 총기 비주얼이 시점(상하)을 따라 기울어지는 정도. 위아래가 뒤집히면 부호 반대로, 0이면 끔 */
+	UPROPERTY(EditDefaultsOnly, Category = "Aim")
+	float GunPitchScale = -1.0f;
+
+	/** 위로 이 각도(도) 넘게 보면 총기 기울기 정지 + 발사 불가 (위쪽이 더 어색해 작게) */
+	UPROPERTY(EditDefaultsOnly, Category = "Aim")
+	float MaxAimPitchUp = 40.f;
+
+	/** 아래로 이 각도(도) 넘게 보면 총기 기울기 정지 + 발사 불가 */
+	UPROPERTY(EditDefaultsOnly, Category = "Aim")
+	float MaxAimPitchDown = 60.f;
+
+	/** BeginPlay에서 저장하는 소총의 기본 상대 회전 (BP에서 맞춘 그립 기준값) */
+	FRotator WeaponRestRelativeRotation = FRotator::ZeroRotator;
+
 	/** 어깨 오프셋 카메라 기준 실제 조준점(크로스헤어가 가리키는 곳)을 바라보도록 회전 */
 	void FaceAimPoint(float DeltaTime);
+
+	/** 달리기 중 이동(velocity) 방향을 바라보도록 회전 — 정면 달리기(키보드 방향) */
+	void FaceMovementDirection(float DeltaTime);
 
 	/** 카메라 컴포넌트가 매 프레임 묻는 현재 카메라 모드 (사망 시 DeathCameraMode 반환) */
 	TSubclassOf<UZombieCameraMode> DetermineCameraMode() const;
