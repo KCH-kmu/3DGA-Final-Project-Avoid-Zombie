@@ -422,8 +422,19 @@ void AZombiePlayerCharacter::TakeDamageAmount(float Amount)
 
 void AZombiePlayerCharacter::HealHealth(float Amount)
 {
+	HealHealthOverflow(Amount);
+}
+
+float AZombiePlayerCharacter::HealHealthOverflow(float Amount)
+{
+	if (IsDead() || Amount <= 0.f) return 0.f;
+
+	const float Before = CurrentHealth;
 	CurrentHealth = FMath::Clamp(CurrentHealth + Amount, 0.f, MaxHealth);
 	OnHealthChanged.Broadcast(CurrentHealth, MaxHealth);
+
+	// 실제 적용된 회복량을 뺀 나머지 = 최대치 초과로 버려진 양
+	return Amount - (CurrentHealth - Before);
 }
 
 // ─── 사망 ─────────────────────────────────────────────────────────────────

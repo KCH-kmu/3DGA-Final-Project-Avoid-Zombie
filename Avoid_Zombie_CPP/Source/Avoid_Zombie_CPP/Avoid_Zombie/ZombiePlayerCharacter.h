@@ -99,6 +99,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	void HealHealth(float Amount);
 
+	/** 회복하되 최대 체력 초과로 버려진 양(낭비분)을 반환 — 웨이브 클리어 보너스 환산용 */
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	float HealHealthOverflow(float Amount);
+
 	UFUNCTION(BlueprintPure, Category = "Health")
 	bool IsDead() const { return CurrentHealth <= 0.f; }
 

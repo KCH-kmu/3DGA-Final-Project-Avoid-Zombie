@@ -52,11 +52,22 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Wave")
 	void OnZombieDead();
 
+	/** 웨이브 클리어(생존) 시 회복량 */
+	UPROPERTY(EditDefaultsOnly, Category = "Wave")
+	float WaveClearHeal = 2.f;
+
+	/** 최대 체력 초과로 버려진 회복량 1당 추가 점수 */
+	UPROPERTY(EditDefaultsOnly, Category = "Wave")
+	int32 OverflowHealScore = 50;
+
 protected:
 	FTimerHandle WaveTimerHandle;
 	FTimerHandle SpawnQueueTimerHandle;
 	TArray<FTimerHandle> PortalCooldownTimers;
 	TArray<bool>         PortalOnCooldown;
+
+	/** 이번 웨이브에서 좀비를 이미 생성한 포탈 여부 — '아직 안 쓴 포탈'을 우선 분배 */
+	TArray<bool>         PortalUsedThisWave;
 
 	int32 SpawnQueueCount    = 0;
 	float SpawnQueueInterval = 0.3f;
@@ -70,4 +81,7 @@ protected:
 	void SpawnOneFromQueue();
 	int32 GetAvailablePortalIndex() const;
 	void ClearPortalCooldown(int32 Idx);
+
+	/** 웨이브 클리어 시 체력 회복 + 최대치 초과분(낭비)을 점수로 환산 */
+	void ApplyWaveClearHeal();
 };
