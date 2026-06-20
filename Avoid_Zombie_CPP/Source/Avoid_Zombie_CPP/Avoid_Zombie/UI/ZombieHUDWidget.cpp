@@ -1,6 +1,85 @@
 // Copyright 2024, Avoid_Zombie_CPP. All Rights Reserved.
 
 #include "ZombieHUDWidget.h"
+#include "Engine/Texture2D.h"
+#include "UObject/ConstructorHelpers.h"
+#include "../WeaponComponent.h"
+#include "../ZombiePlayerCharacter.h"
+
+UZombieHUDWidget::UZombieHUDWidget(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+	// 아이템 아이콘 기본값 자동 로드 (WBP_ZombieHUD에서 덮어쓰기 가능)
+	static ConstructorHelpers::FObjectFinder<UTexture2D> HealTex(TEXT("/Game/Icon/T_Item_Health.T_Item_Health"));
+	if (HealTex.Succeeded()) Icon_HealSelf = HealTex.Object;
+
+	static ConstructorHelpers::FObjectFinder<UTexture2D> ReloadTex(TEXT("/Game/Icon/T_Item_ReloadSpeed.T_Item_ReloadSpeed"));
+	if (ReloadTex.Succeeded()) Icon_FireRateUp = ReloadTex.Object;
+
+	static ConstructorHelpers::FObjectFinder<UTexture2D> FreezeTex(TEXT("/Game/Icon/T_Item_ZombieFreeze.T_Item_ZombieFreeze"));
+	if (FreezeTex.Succeeded()) Icon_StunAll = FreezeTex.Object;
+}
+
+// ─── 아이템 (보유 / 발동 중) ────────────────────────────────────────────────
+UWeaponComponent* UZombieHUDWidget::GetWeapon() const
+{
+	if (AZombiePlayerCharacter* Player = Cast<AZombiePlayerCharacter>(GetOwningPlayerPawn()))
+		return Player->WeaponComp;
+	return nullptr;
+}
+
+UTexture2D* UZombieHUDWidget::GetIconForItem(EItemType Item) const
+{
+	switch (Item)
+	{
+	case EItemType::HealSelf:   return Icon_HealSelf;
+	case EItemType::FireRateUp: return Icon_FireRateUp;
+	case EItemType::StunAll:    return Icon_StunAll;
+	default:                    return nullptr;
+	}
+}
+
+bool UZombieHUDWidget::HasHeldItem() const
+{
+	const UWeaponComponent* W = GetWeapon();
+	return W && W->HeldItem != EItemType::None;
+}
+
+UTexture2D* UZombieHUDWidget::GetHeldItemIcon() const
+{
+	const UWeaponComponent* W = GetWeapon();
+	return W ? GetIconForItem(W->HeldItem) : nullptr;
+}
+
+bool UZombieHUDWidget::HasActiveBuff() const
+{
+	const UWeaponComponent* W = GetWeapon();
+	return W && W->ActiveTimedItem != EItemType::None;
+}
+
+UTexture2D* UZombieHUDWidget::GetActiveBuffIcon() const
+{
+	const UWeaponComponent* W = GetWeapon();
+	return W ? GetIconForItem(W->ActiveTimedItem) : nullptr;
+}
+
+float UZombieHUDWidget::GetActiveBuffProgress() const
+{
+	const UWeaponComponent* W = GetWeapon();
+	return W ? W->GetActiveTimedProgress() : 0.f;
+}
+
+float UZombieHUDWidget::GetActiveBuffElapsed() const
+{
+	return 1.f - GetActiveBuffProgress();
+}
+
+FLinearColor UZombieHUDWidget::GetActiveBuffTint() const
+{
+	// Elapsed 0(방금 발동)=밝게(흰색) → 1(종료 직전)=어둡게(짙은 회색)
+	const float B = FMath::Lerp(1.0f, 0.3f, GetActiveBuffElapsed());
+	return FLinearColor(B, B, B, 1.0f);
+}
 
 // ─── 탄약 ─────────────────────────────────────────────────────────────────
 void UZombieHUDWidget::SetAmmo_Implementation(int32 Current, int32 Max)

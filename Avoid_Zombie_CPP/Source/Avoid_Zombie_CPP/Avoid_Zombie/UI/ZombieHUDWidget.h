@@ -5,6 +5,10 @@
 #include "Blueprint/UserWidget.h"
 #include "ZombieHUDWidget.generated.h"
 
+class UTexture2D;
+class UWeaponComponent;
+enum class EItemType : uint8;
+
 /**
  * Avoid Zombie 메인 HUD 위젯
  *
@@ -20,6 +24,8 @@ class AVOID_ZOMBIE_CPP_API UZombieHUDWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
+	UZombieHUDWidget(const FObjectInitializer& ObjectInitializer);
+
 	// ─── 탄약 ───────────────────────────────────────────────────────
 	UPROPERTY(BlueprintReadOnly, Category = "HUD|Ammo")
 	int32 CurrentAmmo = 30;
@@ -93,4 +99,50 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "HUD|Wave")
 	void SetWave(int32 NewWave);
 	virtual void SetWave_Implementation(int32 NewWave);
+
+	// ─── 아이템 (보유 / 발동 중) — UMG 바인딩용 ────────────────────
+	/** 아이템 아이콘 (생성자에서 자동 로드, WBP에서 덮어쓰기 가능) */
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|Item")
+	TObjectPtr<UTexture2D> Icon_HealSelf;
+
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|Item")
+	TObjectPtr<UTexture2D> Icon_FireRateUp;
+
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|Item")
+	TObjectPtr<UTexture2D> Icon_StunAll;
+
+	/** 들고 있는 아이템이 있는지 — 보유 슬롯 Visibility 바인딩 */
+	UFUNCTION(BlueprintPure, Category = "HUD|Item")
+	bool HasHeldItem() const;
+
+	/** 들고 있는 아이템 아이콘 — 보유 슬롯 Image Brush 바인딩 */
+	UFUNCTION(BlueprintPure, Category = "HUD|Item")
+	UTexture2D* GetHeldItemIcon() const;
+
+	/** 발동 중 지속시간 아이템이 있는지 — 발동 슬롯 Visibility 바인딩 */
+	UFUNCTION(BlueprintPure, Category = "HUD|Item")
+	bool HasActiveBuff() const;
+
+	/** 발동 중 아이템 아이콘 — 발동 슬롯 Image Brush 바인딩 */
+	UFUNCTION(BlueprintPure, Category = "HUD|Item")
+	UTexture2D* GetActiveBuffIcon() const;
+
+	/** 발동 중 진행률 (1=방금 발동 → 0=종료) */
+	UFUNCTION(BlueprintPure, Category = "HUD|Item")
+	float GetActiveBuffProgress() const;
+
+	/** 경과율 (0=방금 → 1=종료) = 1 - Progress. */
+	UFUNCTION(BlueprintPure, Category = "HUD|Item")
+	float GetActiveBuffElapsed() const;
+
+	/** 발동 중 아이콘 색조 — 시간 갈수록 어두워짐(흰색→어두운 회색). ActiveIcon의 ColorAndOpacity에 사용 */
+	UFUNCTION(BlueprintPure, Category = "HUD|Item")
+	FLinearColor GetActiveBuffTint() const;
+
+protected:
+	/** 소유 플레이어의 무기 컴포넌트 */
+	UWeaponComponent* GetWeapon() const;
+
+	/** 아이템 종류 → 아이콘 텍스처 */
+	UTexture2D* GetIconForItem(EItemType Item) const;
 };
