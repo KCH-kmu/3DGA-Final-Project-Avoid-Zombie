@@ -21,6 +21,7 @@ public class Avoid_Zombie_CPP : ModuleRules
 			"GameplayStateTreeModule",
 			"UMG",
 			"Slate",
+			"RenderCore",         // HUD 캔버스 삼각형 드로잉(GWhiteTexture)용
 			"GameplayTags"        // Lyra 이식 카메라 모드의 CameraTypeTag용
 		});
 

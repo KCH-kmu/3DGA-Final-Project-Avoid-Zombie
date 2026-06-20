@@ -79,6 +79,26 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Item")
 	EItemType HeldItem = EItemType::None;
 
+	// ─── 발동 중 지속시간 아이템 (HUD 카운트다운용) ────────────────
+	/** 현재 발동 중인 지속시간 아이템 (없으면 None) */
+	UPROPERTY(BlueprintReadOnly, Category = "Item")
+	EItemType ActiveTimedItem = EItemType::None;
+
+	/** 발동 중 아이템 남은 시간(초) */
+	UPROPERTY(BlueprintReadOnly, Category = "Item")
+	float ActiveTimedRemaining = 0.f;
+
+	/** 발동 중 아이템 총 지속시간(초) */
+	UPROPERTY(BlueprintReadOnly, Category = "Item")
+	float ActiveTimedDuration = 0.f;
+
+	/** 발동 중 아이템 진행률 (1=방금 발동 → 0=종료) — HUD 카운트다운용 */
+	UFUNCTION(BlueprintPure, Category = "Item")
+	float GetActiveTimedProgress() const
+	{
+		return ActiveTimedDuration > 0.f ? FMath::Clamp(ActiveTimedRemaining / ActiveTimedDuration, 0.f, 1.f) : 0.f;
+	}
+
 	// ─── 공개 함수 ──────────────────────────────────────────────────
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void StartFire();
@@ -121,6 +141,10 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon|Buff")
 	float BuffDuration = 5.f;
+
+	/** 전체 스턴 지속시간(초) — 좀비 스턴 + HUD 카운트다운 공통 */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon|Buff")
+	float StunDuration = 3.f;
 
 private:
 	bool  bIsFiring             = false;

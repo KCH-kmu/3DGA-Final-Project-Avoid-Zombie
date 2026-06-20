@@ -32,6 +32,17 @@ void UWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 		if (BuffTimer <= 0.f) EndFireRateBuff();
 	}
 
+	// ─── 지속시간 아이템 표시 타이머 (HUD 카운트다운) ──────────────
+	if (ActiveTimedItem != EItemType::None)
+	{
+		ActiveTimedRemaining -= DeltaTime;
+		if (ActiveTimedRemaining <= 0.f)
+		{
+			ActiveTimedItem      = EItemType::None;
+			ActiveTimedRemaining = 0.f;
+		}
+	}
+
 	// ─── 재장전 타이머 ──────────────────────────────────────────────
 	if (bIsReloading)
 	{
@@ -170,13 +181,21 @@ void UWeaponComponent::UseHeldItem()
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AZombieCharacter::StaticClass(), Zombies);
 		for (AActor* A : Zombies)
 			if (AZombieCharacter* Z = Cast<AZombieCharacter>(A))
-				Z->ApplyStun(3.f);
+				Z->ApplyStun(StunDuration);
+		// HUD 카운트다운 표시용
+		ActiveTimedItem      = EItemType::StunAll;
+		ActiveTimedDuration  = StunDuration;
+		ActiveTimedRemaining = StunDuration;
 		UE_LOG(LogTemp, Log, TEXT("[Item] 전체 스턴 (%d마리)"), Zombies.Num());
 		break;
 	}
 	case EItemType::FireRateUp:
 		bIsFireRateBuff = true;
 		BuffTimer       = BuffDuration;
+		// HUD 카운트다운 표시용
+		ActiveTimedItem      = EItemType::FireRateUp;
+		ActiveTimedDuration  = BuffDuration;
+		ActiveTimedRemaining = BuffDuration;
 		UE_LOG(LogTemp, Log, TEXT("[Item] 발사속도 버프 (%.0f초)"), BuffDuration);
 		break;
 
