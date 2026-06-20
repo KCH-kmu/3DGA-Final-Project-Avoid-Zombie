@@ -6,6 +6,7 @@
 #include "ZombieHUD.generated.h"
 
 class UZombieHUDWidget;
+class UZombieGameOverWidget;
 
 UCLASS()
 class AVOID_ZOMBIE_CPP_API AZombieHUD : public AHUD
@@ -38,9 +39,16 @@ public:
 	/** 웨이브 갱신 */
 	UFUNCTION() void OnWaveChanged(int32 NewWave);
 
+	/** 게임 오버 — 게임오버 화면 표시 (GameState::OnGameOver 바인딩) */
+	UFUNCTION() void OnGameOver();
+
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "HUD")
 	TSubclassOf<UZombieHUDWidget> HUDWidgetClass;
+
+	/** 게임오버 위젯 클래스 (미지정 시 C++ 기본 UZombieGameOverWidget 사용) */
+	UPROPERTY(EditDefaultsOnly, Category = "HUD")
+	TSubclassOf<UZombieGameOverWidget> GameOverWidgetClass;
 
 	// ─── 크로스헤어 설정 ────────────────────────────────────────────
 	/** 선 길이 */
@@ -124,4 +132,7 @@ protected:
 private:
 	UPROPERTY()
 	TObjectPtr<UZombieHUDWidget> HUDWidget;
+
+	UPROPERTY()
+	TObjectPtr<UZombieGameOverWidget> GameOverWidget;
 };

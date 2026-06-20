@@ -2,7 +2,9 @@
 
 #include "ZombieHUD.h"
 #include "ZombieHUDWidget.h"
+#include "ZombieGameOverWidget.h"
 #include "Engine/Canvas.h"
+#include "Blueprint/UserWidget.h"
 #include "../WeaponComponent.h"
 #include "../ZombiePlayerCharacter.h"
 #include "../ZombieGameState.h"
@@ -44,6 +46,7 @@ void AZombieHUD::BeginPlay()
 		GS->OnScoreChanged.AddDynamic(this, &AZombieHUD::OnScoreChanged);
 		GS->OnKillsChanged.AddDynamic(this, &AZombieHUD::OnKillsChanged);
 		GS->OnWaveChanged.AddDynamic(this, &AZombieHUD::OnWaveChanged);
+		GS->OnGameOver.AddDynamic(this, &AZombieHUD::OnGameOver);
 		// 초기값
 		OnTimeUpdated(GS->ElapsedTime);
 		OnScoreChanged(GS->TotalScore);
@@ -199,4 +202,42 @@ void AZombieHUD::OnKillsChanged(int32 NewKills)
 void AZombieHUD::OnWaveChanged(int32 NewWave)
 {
 	if (HUDWidget) HUDWidget->SetWave(NewWave);
+}
+
+void AZombieHUD::OnGameOver()
+{
+	if (GameOverWidget) return; // 중복 방지
+
+	APlayerController* PC = GetOwningPlayerController();
+
+	// 게임오버 위젯 생성 (BP 미지정 시 C++ 기본 클래스 사용)
+	TSubclassOf<UZombieGameOverWidget> Cls = GameOverWidgetClass;
+	if (!Cls) Cls = UZombieGameOverWidget::StaticClass();
+	GameOverWidget = CreateWidget<UZombieGameOverWidget>(PC, Cls);
+
+	if (GameOverWidget)
+	{
+		// 항목별 점수 주입
+		if (AZombieGameState* GS = GetWorld() ? GetWorld()->GetGameState<AZombieGameState>() : nullptr)
+		{
+			const int32 WavesCleared   = FMath::Max(0, GS->CurrentWave - 1);
+			const int32 MilestoneCount = (GS->MilestoneBonus > 0) ? (GS->MilestoneScore / GS->MilestoneBonus) : 0;
+			GameOverWidget->SetGameOverStats(
+				GS->TotalKills, GS->KillScore,
+				WavesCleared,   GS->WaveClearScore,
+				MilestoneCount, GS->MilestoneScore,
+				GS->HealBonusScore, GS->TotalScore);
+		}
+		GameOverWidget->AddToViewport(100); // HUD 위에
+
+		// 마우스 커서 + UI 입력 (버튼 클릭용)
+		if (PC)
+		{
+			PC->bShowMouseCursor = true;
+			FInputModeUIOnly Mode;
+			Mode.SetWidgetToFocus(GameOverWidget->TakeWidget());
+			Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+			PC->SetInputMode(Mode);
+		}
+	}
 }
