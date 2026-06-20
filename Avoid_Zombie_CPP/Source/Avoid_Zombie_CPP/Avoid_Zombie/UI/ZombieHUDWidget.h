@@ -139,6 +139,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "HUD|Item")
 	FLinearColor GetActiveBuffTint() const;
 
+	/** 'ActiveSlot'이라는 이름의 위젯의 화면(뷰포트 픽셀) 중심을 구함 — C++ HUD 원형 링 자동 정렬용. 성공 시 true */
+	bool GetActiveSlotViewportCenter(FVector2D& OutCenter) const;
+
 protected:
 	/** 소유 플레이어의 무기 컴포넌트 */
 	UWeaponComponent* GetWeapon() const;

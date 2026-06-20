@@ -121,6 +121,54 @@ void AZombieHUD::DrawHUD()
 			DrawArcSegment(A0, A1, ReloadRingColor, ReloadRingThickness);
 		}
 	}
+
+	// ─── 발동 중 아이템 원형 타이머 (재장전 링과 동일 스타일, 발동 슬롯 위) ───
+	// 남은 시간(GetActiveTimedProgress 1→0)만큼 12시부터 시계방향 게이지가 줄어듦
+	if (Weapon && Weapon->ActiveTimedItem != EItemType::None)
+	{
+		const float Remaining = FMath::Clamp(Weapon->GetActiveTimedProgress(), 0.f, 1.f);
+
+		// 링 중심: 기본은 마진 값, 자동 정렬 ON이면 ActiveSlot 위젯 위치를 따라감
+		float RX = Canvas->ClipX - ActiveRingCenterFromRight;
+		float RY = Canvas->ClipY - ActiveRingCenterFromBottom;
+		if (bAutoAlignRingToSlot && HUDWidget)
+		{
+			FVector2D SlotCenter;
+			if (HUDWidget->GetActiveSlotViewportCenter(SlotCenter))
+			{
+				RX = SlotCenter.X;
+				RY = SlotCenter.Y;
+			}
+		}
+
+		const int32 NumSeg = 48;
+		const float Start  = -0.5f * PI; // 12시 방향
+		const float Full   = 2.f * PI;
+
+		auto DrawActiveArc = [&](float A0, float A1, const FLinearColor& C, float Th)
+		{
+			DrawLine(RX + ActiveRingRadius * FMath::Cos(A0), RY + ActiveRingRadius * FMath::Sin(A0),
+			         RX + ActiveRingRadius * FMath::Cos(A1), RY + ActiveRingRadius * FMath::Sin(A1), C, Th);
+		};
+
+		// 배경 링 (전체, 어두운 반투명)
+		for (int32 i = 0; i < NumSeg; ++i)
+		{
+			const float A0 = Start + Full * (i / (float)NumSeg);
+			const float A1 = Start + Full * ((i + 1) / (float)NumSeg);
+			DrawActiveArc(A0, A1, ActiveRingBackColor, ActiveRingBackThickness);
+		}
+
+		// 남은 시간 게이지 (12시부터 시계방향, 남은 비율만큼)
+		const float Ang  = Full * Remaining;
+		const int32 Segs = FMath::Max(1, FMath::CeilToInt(NumSeg * Remaining));
+		for (int32 i = 0; i < Segs; ++i)
+		{
+			const float A0 = Start + Ang * (i / (float)Segs);
+			const float A1 = Start + Ang * ((i + 1) / (float)Segs);
+			DrawActiveArc(A0, A1, ActiveRingColor, ActiveRingThickness);
+		}
+	}
 }
 
 void AZombieHUD::OnAmmoChanged(int32 Current, int32 Max)

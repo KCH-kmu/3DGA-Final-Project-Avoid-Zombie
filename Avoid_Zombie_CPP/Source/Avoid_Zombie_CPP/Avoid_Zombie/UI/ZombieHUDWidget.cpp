@@ -3,6 +3,8 @@
 #include "ZombieHUDWidget.h"
 #include "Engine/Texture2D.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Components/Widget.h"
+#include "Blueprint/SlateBlueprintLibrary.h"
 #include "../WeaponComponent.h"
 #include "../ZombiePlayerCharacter.h"
 
@@ -79,6 +81,22 @@ FLinearColor UZombieHUDWidget::GetActiveBuffTint() const
 	// Elapsed 0(방금 발동)=밝게(흰색) → 1(종료 직전)=어둡게(짙은 회색)
 	const float B = FMath::Lerp(1.0f, 0.3f, GetActiveBuffElapsed());
 	return FLinearColor(B, B, B, 1.0f);
+}
+
+bool UZombieHUDWidget::GetActiveSlotViewportCenter(FVector2D& OutCenter) const
+{
+	// WBP에서 'ActiveSlot'이라는 이름의 위젯을 찾아 그 화면 중심을 픽셀로 반환
+	const UWidget* SlotWidget = GetWidgetFromName(TEXT("ActiveSlot"));
+	if (!SlotWidget) return false;
+
+	const FGeometry& Geo = SlotWidget->GetCachedGeometry();
+	if (Geo.GetLocalSize().IsNearlyZero()) return false; // 아직 레이아웃 전(또는 숨김)
+
+	const FVector2D AbsCenter = Geo.GetAbsolutePosition() + Geo.GetAbsoluteSize() * 0.5f;
+	FVector2D PixelPos, ViewportPos;
+	USlateBlueprintLibrary::AbsoluteToViewport(this, AbsCenter, PixelPos, ViewportPos);
+	OutCenter = PixelPos;
+	return true;
 }
 
 // ─── 탄약 ─────────────────────────────────────────────────────────────────

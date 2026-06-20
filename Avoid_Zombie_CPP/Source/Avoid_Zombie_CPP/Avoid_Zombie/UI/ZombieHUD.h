@@ -88,6 +88,39 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "HUD|Reload")
 	FLinearColor ReloadRingBackColor = FLinearColor(0.f, 0.f, 0.f, 0.5f);
 
+	// ─── 발동 아이템 원형 타이머 (재장전 링 스타일, 발동 슬롯 위에 겹침) ──
+	/** ActiveSlot 위젯 위치에 링을 자동 정렬 (켜면 아래 Center 값 무시하고 슬롯을 따라감) */
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|ActiveRing")
+	bool bAutoAlignRingToSlot = true;
+
+	/** 자동 정렬 OFF일 때: 화면 오른쪽 끝에서 링 '중심'까지 거리(px) */
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|ActiveRing")
+	float ActiveRingCenterFromRight = 210.f;
+
+	/** 화면 아래 끝에서 링 '중심'까지 거리(px) */
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|ActiveRing")
+	float ActiveRingCenterFromBottom = 62.f;
+
+	/** 링 반지름(px) — 슬롯을 감싸도록 */
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|ActiveRing")
+	float ActiveRingRadius = 42.f;
+
+	/** 남은 시간 게이지 두께 */
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|ActiveRing")
+	float ActiveRingThickness = 4.f;
+
+	/** 배경 링 두께 */
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|ActiveRing")
+	float ActiveRingBackThickness = 6.f;
+
+	/** 게이지 색 */
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|ActiveRing")
+	FLinearColor ActiveRingColor = FLinearColor::White;
+
+	/** 배경 링 색 (어두운 반투명) */
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|ActiveRing")
+	FLinearColor ActiveRingBackColor = FLinearColor(0.f, 0.f, 0.f, 0.5f);
+
 private:
 	UPROPERTY()
 	TObjectPtr<UZombieHUDWidget> HUDWidget;
