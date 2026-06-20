@@ -6,6 +6,7 @@
 #include "WaveManager.generated.h"
 
 class AZombieCharacter;
+class AItemBoxSpawner;
 
 /**
  * 웨이브 매니저
@@ -60,7 +61,15 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Wave")
 	int32 OverflowHealScore = 50;
 
+	/** 웨이브 클리어(다음 웨이브 시작) 시 아이템 박스 드롭 여부 */
+	UPROPERTY(EditDefaultsOnly, Category = "ItemBox")
+	bool bDropItemBoxOnWaveClear = true;
+
 protected:
+	/** 레벨의 아이템 박스 스포너 (BeginPlay에서 탐색해 캐시) */
+	UPROPERTY()
+	TObjectPtr<AItemBoxSpawner> ItemBoxSpawner;
+
 	FTimerHandle WaveTimerHandle;
 	FTimerHandle SpawnQueueTimerHandle;
 	TArray<FTimerHandle> PortalCooldownTimers;

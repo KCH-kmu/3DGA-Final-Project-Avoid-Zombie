@@ -15,6 +15,9 @@ AItemBox::AItemBox()
 
 	BoxMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BoxMesh"));
 	RootComponent = BoxMesh;
+	// 몸으로 통과해서 먹어야 하므로 메시는 충돌/막힘 없음 (픽업은 아래 OverlapSphere가 담당)
+	BoxMesh->SetCollisionProfileName(TEXT("NoCollision"));
+	BoxMesh->SetGenerateOverlapEvents(false);
 
 	OverlapSphere = CreateDefaultSubobject<USphereComponent>(TEXT("OverlapSphere"));
 	OverlapSphere->SetupAttachment(RootComponent);
@@ -47,11 +50,17 @@ void AItemBox::OnOverlapBegin(UPrimitiveComponent*, AActor* OtherActor,
 	UWeaponComponent* Weapon = Player->WeaponComp;
 	if (!Weapon) return;
 
-	// 이미 아이템 보유 중이면 수령 무시
-	if (Weapon->HeldItem != EItemType::None) return;
-
-	Weapon->ReceiveItem(ContainedItem);
-	UE_LOG(LogTemp, Log, TEXT("[ItemBox] 아이템 전달: %d"), (int32)ContainedItem);
+	// 미보유면 새 아이템 지급. 이미 보유 중이면 기존 아이템을 그대로 유지하고
+	// 새 아이템은 버린다. 어느 경우든 박스 자체는 소멸한다.
+	if (Weapon->HeldItem == EItemType::None)
+	{
+		Weapon->ReceiveItem(ContainedItem);
+		UE_LOG(LogTemp, Log, TEXT("[ItemBox] 아이템 전달: %d"), (int32)ContainedItem);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("[ItemBox] 이미 아이템 보유 — 박스만 소멸(기존 아이템 유지)"));
+	}
 
 	ActiveItemBox = nullptr;
 	Destroy();

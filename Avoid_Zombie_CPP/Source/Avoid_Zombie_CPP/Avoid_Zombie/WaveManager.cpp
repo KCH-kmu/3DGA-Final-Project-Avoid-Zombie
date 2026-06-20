@@ -3,6 +3,7 @@
 #include "WaveManager.h"
 #include "ZombieCharacter.h"
 #include "ZombiePlayerCharacter.h"
+#include "ItemBoxSpawner.h"
 #include "ZombieGameState.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -23,6 +24,16 @@ void AWaveManager::BeginPlay()
 	PortalOnCooldown.SetNum(N);
 	PortalUsedThisWave.SetNum(N);
 	PortalCooldownTimers.SetNum(N);
+
+	// 레벨의 아이템 박스 스포너 캐시 (웨이브 클리어 시 드롭 트리거용)
+	{
+		TArray<AActor*> Spawners;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AItemBoxSpawner::StaticClass(), Spawners);
+		if (Spawners.Num() > 0)
+			ItemBoxSpawner = Cast<AItemBoxSpawner>(Spawners[0]);
+		else
+			UE_LOG(LogTemp, Warning, TEXT("[Wave] 레벨에 ItemBoxSpawner 없음 — 웨이브 클리어 드롭 비활성"));
+	}
 
 	// 첫 웨이브 즉시 시작, 이후 20초마다 반복
 	StartNextWave();
@@ -45,11 +56,15 @@ void AWaveManager::StartNextWave()
 
 	if (AZombieGameState* GS = GetWorld()->GetGameState<AZombieGameState>())
 	{
-		// 2웨이브부터 이전 웨이브 클리어(생존) 처리: 점수 +100 + 체력 회복
+		// 2웨이브부터 이전 웨이브 클리어(생존) 처리: 점수 +100 + 체력 회복 + 아이템 박스 드롭
 		if (CurrentWave > 1)
 		{
 			GS->AddWaveClearScore(CurrentWave - 1);
 			ApplyWaveClearHeal();
+
+			// 매 웨이브 클리어마다 아이템 박스 1개 드롭 (필드에 이미 있으면 무시됨)
+			if (bDropItemBoxOnWaveClear && ItemBoxSpawner)
+				ItemBoxSpawner->TrySpawnItemBox();
 		}
 
 		// GameState 웨이브 번호 갱신 + HUD broadcast
