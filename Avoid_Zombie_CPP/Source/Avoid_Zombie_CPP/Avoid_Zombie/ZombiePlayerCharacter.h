@@ -5,6 +5,7 @@
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "Templates/SubclassOf.h"
+#include "Navigation/CrowdAgentInterface.h"
 #include "ZombiePlayerCharacter.generated.h"
 
 class UZombieCameraComponent;
@@ -29,7 +30,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, float, CurrentHea
  * - 마우스로 카메라 & 공격 방향 제어
  */
 UCLASS()
-class AVOID_ZOMBIE_CPP_API AZombiePlayerCharacter : public ACharacter
+class AVOID_ZOMBIE_CPP_API AZombiePlayerCharacter : public ACharacter, public ICrowdAgentInterface
 {
 	GENERATED_BODY()
 
@@ -37,8 +38,17 @@ public:
 	AZombiePlayerCharacter();
 
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+
+	// ─── ICrowdAgentInterface ───────────────────────────────────────
+	// 플레이어를 Detour Crowd에 '회피 대상'으로 등록 → 좀비들이 한 점으로
+	// 몰리지 않고 플레이어 캡슐을 피해 링 형태로 둘러싼다(뭉침/떨림 완화).
+	virtual FVector GetCrowdAgentLocation() const override;
+	virtual FVector GetCrowdAgentVelocity() const override;
+	virtual void GetCrowdAgentCollisions(float& CylinderRadius, float& CylinderHalfHeight) const override;
+	virtual float GetCrowdAgentMaxSpeed() const override;
 
 	// ─── 카메라 (Lyra 이식: 카메라 모드 스택 기반, 스프링암 없음) ───
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")

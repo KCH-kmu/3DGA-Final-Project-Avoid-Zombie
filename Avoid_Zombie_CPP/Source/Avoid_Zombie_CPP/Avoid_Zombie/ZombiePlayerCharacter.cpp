@@ -8,6 +8,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Navigation/CrowdManager.h"
 #include "Animation/AnimMontage.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -83,6 +85,40 @@ void AZombiePlayerCharacter::BeginPlay()
 				Sub->AddMappingContext(MappingContext, 0);
 		}
 	}
+
+	// 플레이어를 Detour Crowd 회피 대상으로 등록 (좀비가 둘러싸게 + 뭉침/떨림 완화)
+	if (UCrowdManager* CrowdManager = UCrowdManager::GetCurrent(GetWorld()))
+		CrowdManager->RegisterAgent(this);
+}
+
+void AZombiePlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (UCrowdManager* CrowdManager = UCrowdManager::GetCurrent(GetWorld()))
+		CrowdManager->UnregisterAgent(this);
+
+	Super::EndPlay(EndPlayReason);
+}
+
+// ─── ICrowdAgentInterface ───────────────────────────────────────────────────
+FVector AZombiePlayerCharacter::GetCrowdAgentLocation() const
+{
+	return GetActorLocation();
+}
+
+FVector AZombiePlayerCharacter::GetCrowdAgentVelocity() const
+{
+	return GetVelocity();
+}
+
+void AZombiePlayerCharacter::GetCrowdAgentCollisions(float& CylinderRadius, float& CylinderHalfHeight) const
+{
+	if (const UCapsuleComponent* Capsule = GetCapsuleComponent())
+		Capsule->GetScaledCapsuleSize(CylinderRadius, CylinderHalfHeight);
+}
+
+float AZombiePlayerCharacter::GetCrowdAgentMaxSpeed() const
+{
+	return SprintSpeed;
 }
 
 void AZombiePlayerCharacter::Tick(float DeltaTime)
