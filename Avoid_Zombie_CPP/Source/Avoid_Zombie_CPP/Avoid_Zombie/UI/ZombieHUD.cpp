@@ -208,6 +208,9 @@ void AZombieHUD::OnGameOver()
 {
 	if (GameOverWidget) return; // 중복 방지
 
+	// 기존 인게임 HUD(체력/탄약/시간/점수) 숨김
+	if (HUDWidget) HUDWidget->SetVisibility(ESlateVisibility::Collapsed);
+
 	APlayerController* PC = GetOwningPlayerController();
 
 	// 게임오버 위젯 생성 (BP 미지정 시 C++ 기본 클래스 사용)
@@ -226,7 +229,8 @@ void AZombieHUD::OnGameOver()
 				GS->TotalKills, GS->KillScore,
 				WavesCleared,   GS->WaveClearScore,
 				MilestoneCount, GS->MilestoneScore,
-				GS->HealBonusScore, GS->TotalScore);
+				GS->HealBonusUnits, GS->HealBonusPerUnit, GS->HealBonusScore,
+				GS->TotalScore);
 		}
 		GameOverWidget->AddToViewport(100); // HUD 위에
 

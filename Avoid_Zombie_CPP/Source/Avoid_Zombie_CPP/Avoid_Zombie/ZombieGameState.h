@@ -76,6 +76,14 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Score|Breakdown")
 	int32 HealBonusScore = 0;
 
+	/** 회복 보너스 누적 HP 수 (게임오버 "{HP}HP × 단가" 표기용) */
+	UPROPERTY(BlueprintReadOnly, Category = "Score|Breakdown")
+	int32 HealBonusUnits = 0;
+
+	/** 회복 보너스 HP당 점수 (표기용, WaveManager가 전달; 기본 50 = OverflowHealScore 기본값) */
+	UPROPERTY(BlueprintReadOnly, Category = "Score|Breakdown")
+	int32 HealBonusPerUnit = 50;
+
 	// ─── 마일스톤 설정 ──────────────────────────────────────────────
 	/** 이 킬 수마다 마일스톤 보너스 지급 (기본 50킬) */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Score")
@@ -105,6 +113,10 @@ public:
 	/** 보너스 점수 직접 추가 */
 	UFUNCTION(BlueprintCallable, Category = "Score")
 	void AddBonusScore(int32 Bonus);
+
+	/** 회복 보너스 추가 (OverflowUnits HP × PerUnitScore 점). 게임오버 표기용 카운트/단가도 기록 */
+	UFUNCTION(BlueprintCallable, Category = "Score")
+	void AddHealBonus(int32 OverflowUnits, int32 PerUnitScore);
 
 	/** 게임 오버 처리 */
 	UFUNCTION(BlueprintCallable, Category = "Game")

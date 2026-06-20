@@ -178,10 +178,10 @@ void AWaveManager::ApplyWaveClearHeal()
 	const float Overflow = Player->HealHealthOverflow(WaveClearHeal);
 	if (Overflow > 0.f)
 	{
-		const int32 Bonus = FMath::RoundToInt(Overflow) * OverflowHealScore;
+		const int32 Units = FMath::RoundToInt(Overflow);
 		if (AZombieGameState* GS = GetWorld()->GetGameState<AZombieGameState>())
-			GS->AddBonusScore(Bonus);
-		UE_LOG(LogTemp, Log, TEXT("[Wave] 클리어 회복 초과 %.0f → +%d점"), Overflow, Bonus);
+			GS->AddHealBonus(Units, OverflowHealScore);
+		UE_LOG(LogTemp, Log, TEXT("[Wave] 클리어 회복 초과 %dHP → +%d점"), Units, Units * OverflowHealScore);
 	}
 	else
 	{

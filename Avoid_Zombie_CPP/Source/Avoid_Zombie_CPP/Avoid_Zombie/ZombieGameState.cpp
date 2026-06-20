@@ -49,9 +49,22 @@ void AZombieGameState::AddWaveClearScore(int32 WaveNumber)
 
 void AZombieGameState::AddBonusScore(int32 Bonus)
 {
-	// 현재 유일한 호출처는 WaveManager의 클리어 회복 초과분 환산 → 회복 보너스로 집계
+	// 범용 보너스 (회복 보너스로 집계)
 	HealBonusScore += Bonus;
 	TotalScore     += Bonus;
+	OnScoreChanged.Broadcast(TotalScore);
+}
+
+void AZombieGameState::AddHealBonus(int32 OverflowUnits, int32 PerUnitScore)
+{
+	if (OverflowUnits <= 0 || PerUnitScore <= 0) return;
+
+	HealBonusUnits   += OverflowUnits;
+	HealBonusPerUnit  = PerUnitScore; // 단가는 고정값 (표기용)
+
+	const int32 Add = OverflowUnits * PerUnitScore;
+	HealBonusScore += Add;
+	TotalScore     += Add;
 	OnScoreChanged.Broadcast(TotalScore);
 }
 

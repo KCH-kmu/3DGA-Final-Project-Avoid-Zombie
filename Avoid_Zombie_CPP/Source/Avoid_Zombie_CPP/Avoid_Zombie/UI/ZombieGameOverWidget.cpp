@@ -7,21 +7,25 @@
 #include "Components/Border.h"
 #include "Components/VerticalBox.h"
 #include "Components/VerticalBoxSlot.h"
+#include "Components/GridPanel.h"
+#include "Components/GridSlot.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
 #include "Styling/CoreStyle.h"
 #include "Brushes/SlateColorBrush.h"
+#include "Brushes/SlateRoundedBoxBrush.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
 
 // ─── 색상/치수 상수 ─────────────────────────────────────────────────────────
 namespace
 {
-	// 짙은 회색 배경 (약 80% 불투명 — 뒤 게임 화면이 살짝 비침)
-	const FLinearColor BgColor      = FLinearColor(0.06f, 0.06f, 0.06f, 0.8f);
-	// 눈에 띄는 굵은 회색 보더
-	const FLinearColor BorderColor  = FLinearColor(0.55f, 0.55f, 0.55f, 1.0f);
-	const float        BorderWidth  = 5.f;     // 보더 두께(px)
+	// 짙은 회색 채움 (약 65% 불투명 — 뒤 게임 화면이 살짝 비침)
+	const FLinearColor BgColor      = FLinearColor(0.04f, 0.04f, 0.04f, 0.65f);
+	// 눈에 띄는 회색 외곽선
+	const FLinearColor BorderColor  = FLinearColor(0.60f, 0.60f, 0.60f, 1.0f);
+	const float        BorderWidth  = 4.f;     // 외곽선 두께(px)
+	const float        PanelRadius  = 12.f;    // 모서리 둥글기(px)
 	const float        InnerPadding = 36.f;    // 내부 여백(px)
 
 	const FLinearColor TitleColor   = FLinearColor(0.92f, 0.18f, 0.18f, 1.0f); // GAME OVER 빨강
@@ -50,51 +54,72 @@ TSharedRef<SWidget> UZombieGameOverWidget::RebuildWidget()
 		RootCanvas = WidgetTree->ConstructWidget<UCanvasPanel>(UCanvasPanel::StaticClass(), TEXT("RootCanvas"));
 		WidgetTree->RootWidget = RootCanvas;
 
-		// ─── 바깥 보더(프레임=회색) : 화면 정중앙, 가로 2/3 · 세로 3/4 ───
-		UBorder* OuterBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass());
-		OuterBorder->SetBrushColor(BorderColor);
-		OuterBorder->SetPadding(FMargin(BorderWidth)); // 이 여백이 그대로 보더 두께가 됨
+		// ─── 패널: 단일 보더 + 둥근박스 브러시(반투명 채움 + 외곽선) ───
+		// 중첩 보더를 쓰면 바깥 보더가 불투명하게 전체를 덮어 뒤가 안 비침.
+		// 둥근박스 브러시 하나로 '반투명 채움 + 외곽선'을 동시에 그려 실제로 비치게 함.
+		UBorder* Panel = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass());
+		Panel->SetBrush(FSlateRoundedBoxBrush(BgColor, PanelRadius, BorderColor, BorderWidth));
+		Panel->SetPadding(FMargin(InnerPadding));
 
-		UCanvasPanelSlot* OuterSlot = RootCanvas->AddChildToCanvas(OuterBorder);
-		// 앵커를 중앙 2/3 × 3/4 영역으로: min(1/6, 1/8) ~ max(5/6, 7/8)
-		OuterSlot->SetAnchors(FAnchors(1.f / 6.f, 1.f / 8.f, 5.f / 6.f, 7.f / 8.f));
-		OuterSlot->SetOffsets(FMargin(0.f)); // 앵커 영역을 꽉 채움
-
-		// ─── 안쪽 보더(배경=짙은 회색 80%) ───
-		UBorder* InnerBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass());
-		InnerBorder->SetBrushColor(BgColor);
-		InnerBorder->SetPadding(FMargin(InnerPadding));
-		OuterBorder->SetContent(InnerBorder);
+		UCanvasPanelSlot* PanelSlot = RootCanvas->AddChildToCanvas(Panel);
+		// 가로 2/3에서 20% 축소(≈0.533), 세로 3/4에서 10% 축소(≈0.675), 화면 정중앙
+		PanelSlot->SetAnchors(FAnchors(0.233333f, 0.1625f, 0.766667f, 0.8375f));
+		PanelSlot->SetOffsets(FMargin(0.f));
 
 		// ─── 세로 박스(내용) ───
 		UVerticalBox* VBox = WidgetTree->ConstructWidget<UVerticalBox>(UVerticalBox::StaticClass());
-		InnerBorder->SetContent(VBox);
+		Panel->SetContent(VBox);
 
-		auto AddLine = [&](UWidget* W, float TopPad, EVerticalAlignment VA = VAlign_Top)
+		auto AddCentered = [&](UWidget* W, float TopPad)
 		{
 			UVerticalBoxSlot* S = VBox->AddChildToVerticalBox(W);
 			S->SetHorizontalAlignment(HAlign_Center);
-			S->SetVerticalAlignment(VA);
+			S->SetVerticalAlignment(VAlign_Top);
 			S->SetPadding(FMargin(0.f, TopPad, 0.f, 0.f));
-			return S;
 		};
 
 		// 1) 상단 'GAME OVER'
-		AddLine(MakeText(TEXT("GAME OVER"), 56, true, TitleColor), 0.f);
+		AddCentered(MakeText(TEXT("GAME OVER"), 56, true, TitleColor), 0.f);
 
-		// 2) 항목별 점수 (RebuildWidget 직후 ApplyStats가 실제 값 주입)
-		KillText      = MakeText(TEXT("Kill : 10 * 0 = 0"),       26, false, LineColor);
-		WaveText      = MakeText(TEXT("Wave Clear : 100 * 0 = 0"),26, false, LineColor);
-		MilestoneText = MakeText(TEXT("Milestone : 300 * 0 = 0"), 26, false, LineColor);
-		HealText      = MakeText(TEXT("Heal Bonus : +0"),         26, false, LineColor);
-		AddLine(KillText,      40.f);
-		AddLine(WaveText,      14.f);
-		AddLine(MilestoneText, 14.f);
-		AddLine(HealText,      14.f);
+		// 2) 항목별 점수 — 콜론(:) 기준 2열 정렬 그리드
+		//    col0: 라벨(우측 정렬) / col1: ": (카운트 단위) \u00D7(점수) = (합계)" (좌측 정렬)
+		UGridPanel* Grid = WidgetTree->ConstructWidget<UGridPanel>(UGridPanel::StaticClass());
+		{
+			UVerticalBoxSlot* GS = VBox->AddChildToVerticalBox(Grid);
+			// 오른쪽 여백 40 → 가운데에서 약 20px 왼쪽으로 이동
+			GS->SetHorizontalAlignment(HAlign_Center);
+			GS->SetVerticalAlignment(VAlign_Top);
+			GS->SetPadding(FMargin(0.f, 40.f, 40.f, 0.f));
+		}
+
+		auto AddStatRow = [&](int32 Row, const FString& Label) -> UTextBlock*
+		{
+			// col0: 라벨 (우측 정렬, 콜론 앞 간격 12px)
+			UTextBlock* L = MakeText(Label, 26, false, LineColor);
+			L->SetJustification(ETextJustify::Right);
+			UGridSlot* LS = Grid->AddChildToGrid(L, Row, 0);
+			LS->SetHorizontalAlignment(HAlign_Right);
+			LS->SetVerticalAlignment(VAlign_Center);
+			LS->SetPadding(FMargin(0.f, 6.f, 12.f, 6.f));
+
+			// col1: 값 (좌측 정렬) — ApplyStats가 실제 문자열 주입
+			UTextBlock* V = MakeText(TEXT(":"), 26, false, LineColor);
+			V->SetJustification(ETextJustify::Left);
+			UGridSlot* VS = Grid->AddChildToGrid(V, Row, 1);
+			VS->SetHorizontalAlignment(HAlign_Left);
+			VS->SetVerticalAlignment(VAlign_Center);
+			VS->SetPadding(FMargin(0.f, 6.f, 0.f, 6.f));
+			return V;
+		};
+
+		KillText      = AddStatRow(0, TEXT("Kill"));
+		WaveText      = AddStatRow(1, TEXT("Survive Bonus"));
+		MilestoneText = AddStatRow(2, TEXT("Kill Streak Bonus"));
+		HealText      = AddStatRow(3, TEXT("Heal Bonus"));
 
 		// 3) Total Score
 		TotalText = MakeText(TEXT("Total Score : 0"), 38, true, TotalColor);
-		AddLine(TotalText, 40.f);
+		AddCentered(TotalText, 40.f);
 
 		// 4) Try Again 버튼 (흰색 배경, 가운데)
 		TryAgainButton = WidgetTree->ConstructWidget<UButton>(UButton::StaticClass());
@@ -109,7 +134,7 @@ TSharedRef<SWidget> UZombieGameOverWidget::RebuildWidget()
 		}
 		TryAgainButton->SetContent(MakeText(TEXT("Try Again"), 28, true, FLinearColor(0.05f, 0.05f, 0.05f, 1.f)));
 		TryAgainButton->OnClicked.AddDynamic(this, &UZombieGameOverWidget::OnTryAgainClicked);
-		AddLine(TryAgainButton, 44.f);
+		AddCentered(TryAgainButton, 44.f);
 
 		ApplyStats();
 	}
@@ -120,7 +145,8 @@ TSharedRef<SWidget> UZombieGameOverWidget::RebuildWidget()
 void UZombieGameOverWidget::SetGameOverStats(int32 InKills, int32 InKillScore,
 	int32 InWavesCleared, int32 InWaveClearScore,
 	int32 InMilestoneCount, int32 InMilestoneScore,
-	int32 InHealBonusScore, int32 InTotalScore)
+	int32 InHealUnits, int32 InHealPerUnit, int32 InHealBonusScore,
+	int32 InTotalScore)
 {
 	Stat_Kills          = InKills;
 	Stat_KillScore      = InKillScore;
@@ -128,6 +154,8 @@ void UZombieGameOverWidget::SetGameOverStats(int32 InKills, int32 InKillScore,
 	Stat_WaveClearScore = InWaveClearScore;
 	Stat_MilestoneCount = InMilestoneCount;
 	Stat_MilestoneScore = InMilestoneScore;
+	Stat_HealUnits      = InHealUnits;
+	Stat_HealPerUnit    = InHealPerUnit;
 	Stat_HealBonusScore = InHealBonusScore;
 	Stat_TotalScore     = InTotalScore;
 	ApplyStats();
@@ -135,14 +163,15 @@ void UZombieGameOverWidget::SetGameOverStats(int32 InKills, int32 InKillScore,
 
 void UZombieGameOverWidget::ApplyStats()
 {
+	// 형식: ": (카운트 단위) \u00D7 (단가) = (합계)"  (\u00D7 = 수학 곱셈기호, 인코딩 안전)
 	if (KillText)
-		KillText->SetText(FText::FromString(FString::Printf(TEXT("Kill : 10 * %d = %d"), Stat_Kills, Stat_KillScore)));
+		KillText->SetText(FText::FromString(FString::Printf(TEXT(": %d Kills \u00D7 10 = %d"), Stat_Kills, Stat_KillScore)));
 	if (WaveText)
-		WaveText->SetText(FText::FromString(FString::Printf(TEXT("Wave Clear : 100 * %d = %d"), Stat_WavesCleared, Stat_WaveClearScore)));
+		WaveText->SetText(FText::FromString(FString::Printf(TEXT(": %d Waves \u00D7 100 = %d"), Stat_WavesCleared, Stat_WaveClearScore)));
 	if (MilestoneText)
-		MilestoneText->SetText(FText::FromString(FString::Printf(TEXT("Milestone : 300 * %d = %d"), Stat_MilestoneCount, Stat_MilestoneScore)));
+		MilestoneText->SetText(FText::FromString(FString::Printf(TEXT(": %d Streaks \u00D7 300 = %d"), Stat_MilestoneCount, Stat_MilestoneScore)));
 	if (HealText)
-		HealText->SetText(FText::FromString(FString::Printf(TEXT("Heal Bonus : +%d"), Stat_HealBonusScore)));
+		HealText->SetText(FText::FromString(FString::Printf(TEXT(": %d HP \u00D7 %d = %d"), Stat_HealUnits, Stat_HealPerUnit, Stat_HealBonusScore)));
 	if (TotalText)
 		TotalText->SetText(FText::FromString(FString::Printf(TEXT("Total Score : %d"), Stat_TotalScore)));
 }

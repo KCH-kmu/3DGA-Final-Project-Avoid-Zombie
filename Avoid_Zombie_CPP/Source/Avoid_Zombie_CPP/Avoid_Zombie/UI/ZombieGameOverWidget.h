@@ -7,6 +7,7 @@
 
 class UCanvasPanel;
 class UVerticalBox;
+class UGridPanel;
 class UTextBlock;
 class UButton;
 
@@ -31,7 +32,8 @@ public:
 	void SetGameOverStats(int32 InKills, int32 InKillScore,
 	                      int32 InWavesCleared, int32 InWaveClearScore,
 	                      int32 InMilestoneCount, int32 InMilestoneScore,
-	                      int32 InHealBonusScore, int32 InTotalScore);
+	                      int32 InHealUnits, int32 InHealPerUnit, int32 InHealBonusScore,
+	                      int32 InTotalScore);
 
 protected:
 	virtual TSharedRef<SWidget> RebuildWidget() override;
@@ -56,6 +58,8 @@ private:
 	int32 Stat_WaveClearScore = 0;
 	int32 Stat_MilestoneCount = 0;
 	int32 Stat_MilestoneScore = 0;
+	int32 Stat_HealUnits      = 0;
+	int32 Stat_HealPerUnit    = 0;
 	int32 Stat_HealBonusScore = 0;
 	int32 Stat_TotalScore     = 0;
 
