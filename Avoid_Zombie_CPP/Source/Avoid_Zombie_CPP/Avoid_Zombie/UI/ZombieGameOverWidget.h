@@ -42,12 +42,11 @@ protected:
 	void OnTryAgainClicked();
 
 private:
-	// ─── 동적으로 채우는 텍스트/버튼 ───────────────────────────────
-	UPROPERTY() TObjectPtr<UTextBlock> KillText;
-	UPROPERTY() TObjectPtr<UTextBlock> WaveText;
-	UPROPERTY() TObjectPtr<UTextBlock> MilestoneText;
-	UPROPERTY() TObjectPtr<UTextBlock> HealText;
-	UPROPERTY() TObjectPtr<UTextBlock> TotalText;
+	// ─── 항목별 점수 표(다중 열)의 동적 셀들 (행 순서: Kill / Survive / Kill Streak / Heal) ──
+	UPROPERTY() TArray<TObjectPtr<UTextBlock>> NumCells;    // 카운트 숫자
+	UPROPERTY() TArray<TObjectPtr<UTextBlock>> PerCells;    // 단가
+	UPROPERTY() TArray<TObjectPtr<UTextBlock>> TotalCells;  // 항목 합계
+	UPROPERTY() TObjectPtr<UTextBlock> TotalText;           // 하단 'Total Score' 라인
 	UPROPERTY() TObjectPtr<UButton>    TryAgainButton;
 	UPROPERTY() TObjectPtr<UCanvasPanel> RootCanvas;
 

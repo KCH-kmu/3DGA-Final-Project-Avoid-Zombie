@@ -55,8 +55,6 @@ TSharedRef<SWidget> UZombieGameOverWidget::RebuildWidget()
 		WidgetTree->RootWidget = RootCanvas;
 
 		// ─── 패널: 단일 보더 + 둥근박스 브러시(반투명 채움 + 외곽선) ───
-		// 중첩 보더를 쓰면 바깥 보더가 불투명하게 전체를 덮어 뒤가 안 비침.
-		// 둥근박스 브러시 하나로 '반투명 채움 + 외곽선'을 동시에 그려 실제로 비치게 함.
 		UBorder* Panel = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass());
 		Panel->SetBrush(FSlateRoundedBoxBrush(BgColor, PanelRadius, BorderColor, BorderWidth));
 		Panel->SetPadding(FMargin(InnerPadding));
@@ -81,41 +79,55 @@ TSharedRef<SWidget> UZombieGameOverWidget::RebuildWidget()
 		// 1) 상단 'GAME OVER'
 		AddCentered(MakeText(TEXT("GAME OVER"), 56, true, TitleColor), 0.f);
 
-		// 2) 항목별 점수 — 콜론(:) 기준 2열 정렬 그리드
-		//    col0: 라벨(우측 정렬) / col1: ": (카운트 단위) \u00D7(점수) = (합계)" (좌측 정렬)
+		// 2) 항목별 점수 — 8열 표: [라벨][:][숫자][단위][곱셈][단가][=][합계]
+		//    기호( : 곱셈 = )는 각자 독립 열이라 세로로 정렬됨(앵커).
+		//    기호 사이 항목은 양쪽으로 붙임(숫자=왼쪽 기호 쪽, 단위=오른쪽 기호 쪽), 합계는 좌측정렬.
+		const FString TimesSym = FString::Chr(0x00D7); // 곱셈기호(런타임 생성 — 소스 인코딩 무관)
+
 		UGridPanel* Grid = WidgetTree->ConstructWidget<UGridPanel>(UGridPanel::StaticClass());
 		{
 			UVerticalBoxSlot* GS = VBox->AddChildToVerticalBox(Grid);
-			// 오른쪽 여백 40 → 가운데에서 약 20px 왼쪽으로 이동
 			GS->SetHorizontalAlignment(HAlign_Center);
 			GS->SetVerticalAlignment(VAlign_Top);
-			GS->SetPadding(FMargin(0.f, 40.f, 40.f, 0.f));
+			GS->SetPadding(FMargin(0.f, 40.f, 0.f, 0.f));
 		}
 
-		auto AddStatRow = [&](int32 Row, const FString& Label) -> UTextBlock*
-		{
-			// col0: 라벨 (우측 정렬, 콜론 앞 간격 12px)
-			UTextBlock* L = MakeText(Label, 26, false, LineColor);
-			L->SetJustification(ETextJustify::Right);
-			UGridSlot* LS = Grid->AddChildToGrid(L, Row, 0);
-			LS->SetHorizontalAlignment(HAlign_Right);
-			LS->SetVerticalAlignment(VAlign_Center);
-			LS->SetPadding(FMargin(0.f, 6.f, 12.f, 6.f));
+		const FMargin SymPad(8.f, 6.f, 8.f, 6.f);    // 기호 열: 좌우 간격 넉넉히
+		const FMargin CellPad(2.f, 6.f, 2.f, 6.f);   // 일반 셀
+		const FMargin NumPad(2.f, 6.f, 22.f, 6.f);   // 숫자 셀: 뒤에 ~20px 간격(긴 단위 'Streaks'와도 안 붙게)
 
-			// col1: 값 (좌측 정렬) — ApplyStats가 실제 문자열 주입
-			UTextBlock* V = MakeText(TEXT(":"), 26, false, LineColor);
-			V->SetJustification(ETextJustify::Left);
-			UGridSlot* VS = Grid->AddChildToGrid(V, Row, 1);
-			VS->SetHorizontalAlignment(HAlign_Left);
-			VS->SetVerticalAlignment(VAlign_Center);
-			VS->SetPadding(FMargin(0.f, 6.f, 0.f, 6.f));
-			return V;
+		// 한 셀 추가 헬퍼
+		auto AddCell = [&](int32 Row, int32 Col, const FString& Text,
+		                   EHorizontalAlignment HA, const FMargin& Pad) -> UTextBlock*
+		{
+			UTextBlock* T = MakeText(Text, 26, false, LineColor);
+			T->SetJustification(HA == HAlign_Right ? ETextJustify::Right
+			                  : HA == HAlign_Left  ? ETextJustify::Left
+			                                       : ETextJustify::Center);
+			UGridSlot* S = Grid->AddChildToGrid(T, Row, Col);
+			S->SetHorizontalAlignment(HA);
+			S->SetVerticalAlignment(VAlign_Center);
+			S->SetPadding(Pad);
+			return T;
 		};
 
-		KillText      = AddStatRow(0, TEXT("Kill"));
-		WaveText      = AddStatRow(1, TEXT("Survive Bonus"));
-		MilestoneText = AddStatRow(2, TEXT("Kill Streak Bonus"));
-		HealText      = AddStatRow(3, TEXT("Heal Bonus"));
+		// 한 행 추가: 라벨/단위는 고정, 숫자·단가·합계 셀은 배열에 저장(ApplyStats가 채움)
+		auto AddRow = [&](int32 Row, const FString& Label, const FString& Unit)
+		{
+			AddCell(Row, 0, Label,     HAlign_Right,  CellPad);                  // 라벨(→ : 쪽)
+			AddCell(Row, 1, TEXT(":"), HAlign_Center, SymPad);                   // :
+			NumCells.Add(  AddCell(Row, 2, TEXT("0"), HAlign_Left,   NumPad) );  // 숫자(: 쪽, 뒤 간격 확보)
+			AddCell(Row, 3, Unit,      HAlign_Right,  CellPad);                  // 단위(곱셈 쪽)
+			AddCell(Row, 4, TimesSym,  HAlign_Center, SymPad);                   // 곱셈
+			PerCells.Add(  AddCell(Row, 5, TEXT("0"), HAlign_Center, CellPad) ); // 단가
+			AddCell(Row, 6, TEXT("="), HAlign_Center, SymPad);                   // =
+			TotalCells.Add(AddCell(Row, 7, TEXT("0"), HAlign_Left,   CellPad) ); // 합계(= 쪽, 좌측정렬)
+		};
+
+		AddRow(0, TEXT("Kill"),              TEXT("Kills"));
+		AddRow(1, TEXT("Survive Bonus"),     TEXT("Waves"));
+		AddRow(2, TEXT("Kill Streak Bonus"), TEXT("Streaks"));
+		AddRow(3, TEXT("Overheal Bonus"),    TEXT("HP"));
 
 		// 3) Total Score
 		TotalText = MakeText(TEXT("Total Score : 0"), 38, true, TotalColor);
@@ -163,15 +175,31 @@ void UZombieGameOverWidget::SetGameOverStats(int32 InKills, int32 InKillScore,
 
 void UZombieGameOverWidget::ApplyStats()
 {
-	// 형식: ": (카운트 단위) \u00D7 (단가) = (합계)"  (\u00D7 = 수학 곱셈기호, 인코딩 안전)
-	if (KillText)
-		KillText->SetText(FText::FromString(FString::Printf(TEXT(": %d Kills \u00D7 10 = %d"), Stat_Kills, Stat_KillScore)));
-	if (WaveText)
-		WaveText->SetText(FText::FromString(FString::Printf(TEXT(": %d Waves \u00D7 100 = %d"), Stat_WavesCleared, Stat_WaveClearScore)));
-	if (MilestoneText)
-		MilestoneText->SetText(FText::FromString(FString::Printf(TEXT(": %d Streaks \u00D7 300 = %d"), Stat_MilestoneCount, Stat_MilestoneScore)));
-	if (HealText)
-		HealText->SetText(FText::FromString(FString::Printf(TEXT(": %d HP \u00D7 %d = %d"), Stat_HealUnits, Stat_HealPerUnit, Stat_HealBonusScore)));
+	auto SetCell = [](const TArray<TObjectPtr<UTextBlock>>& Cells, int32 i, int32 Val)
+	{
+		if (Cells.IsValidIndex(i) && Cells[i])
+			Cells[i]->SetText(FText::FromString(FString::FromInt(Val)));
+	};
+
+	// 숫자(카운트)
+	SetCell(NumCells, 0, Stat_Kills);
+	SetCell(NumCells, 1, Stat_WavesCleared);
+	SetCell(NumCells, 2, Stat_MilestoneCount);
+	SetCell(NumCells, 3, Stat_HealUnits);
+
+	// 단가 (Kill/Survive/Streak는 고정값, Heal은 데이터로 받은 HP당 점수)
+	SetCell(PerCells, 0, 10);
+	SetCell(PerCells, 1, 100);
+	SetCell(PerCells, 2, 300);
+	SetCell(PerCells, 3, Stat_HealPerUnit);
+
+	// 항목 합계
+	SetCell(TotalCells, 0, Stat_KillScore);
+	SetCell(TotalCells, 1, Stat_WaveClearScore);
+	SetCell(TotalCells, 2, Stat_MilestoneScore);
+	SetCell(TotalCells, 3, Stat_HealBonusScore);
+
+	// 하단 총점
 	if (TotalText)
 		TotalText->SetText(FText::FromString(FString::Printf(TEXT("Total Score : %d"), Stat_TotalScore)));
 }

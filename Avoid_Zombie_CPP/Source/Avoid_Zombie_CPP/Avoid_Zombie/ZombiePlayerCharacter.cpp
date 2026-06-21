@@ -252,9 +252,16 @@ void AZombiePlayerCharacter::FaceAimPoint(float DeltaTime)
 	// 과도한 조준각(위/아래)에서는 몸 회전을 멈춤 → 시점을 돌려도 총·팔이 안 흔들리고 고정됨
 	if (IsAimBlocked()) return;
 
-	// 무기(WeaponComponent::PerformLineTrace)와 동일한 트레이스로 실제 조준점 계산
-	const FVector Start = CameraComp->GetComponentLocation();
-	const FVector End   = Start + CameraComp->GetForwardVector() * AimTraceDistance;
+	// 무기(WeaponComponent::PerformLineTrace)와 동일한 트레이스로 실제 조준점 계산.
+	// 3인칭 어깨 카메라는 캐릭터 뒤에 있어, 카메라에서 곧장 트레이스하면 카메라와
+	// 캐릭터 사이(=캐릭터 등 뒤)에 있는 좀비가 먼저 맞아 조준점이 등 뒤로 잡힌다
+	// → 캐릭터가 홱 뒤돌아봄. 트레이스 시작점을 캐릭터 깊이까지 끌어와(카메라~캐릭터
+	// 구간을 무시) 항상 크로스헤어가 가리키는 정면 대상만 조준하게 한다.
+	const FVector CamLoc = CameraComp->GetComponentLocation();
+	const FVector CamFwd = CameraComp->GetForwardVector();
+	const float   PlayerAlongRay = FVector::DotProduct(GetActorLocation() - CamLoc, CamFwd);
+	const FVector Start = CamLoc + CamFwd * FMath::Max(PlayerAlongRay, 0.f);
+	const FVector End   = CamLoc + CamFwd * AimTraceDistance;
 
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(this);

@@ -122,6 +122,13 @@ void UWeaponComponent::PerformLineTrace()
 		Dir = Rot.Vector();
 	}
 
+	// 3인칭: 카메라가 캐릭터 뒤에 있어 카메라에서 곧장 쏘면 카메라~캐릭터 사이
+	// (=캐릭터 등 뒤)에 있는 좀비가 먼저 맞는다. 트레이스 시작을 캐릭터 깊이까지
+	// 끌어와 등 뒤 대상을 무시 → 크로스헤어가 가리키는 정면 대상만 타격한다.
+	// (FaceAimPoint의 조준점 계산과 동일 규칙 → 조준 회전과 타격 대상 일치)
+	const float PlayerAlongRay = FVector::DotProduct(OwnerChar->GetActorLocation() - Start, Dir);
+	Start = Start + Dir * FMath::Max(PlayerAlongRay, 0.f);
+
 	const FVector End = Start + Dir * 10000.f;
 
 	FHitResult Hit;
