@@ -5,6 +5,10 @@
 #include "Components/ActorComponent.h"
 #include "WeaponComponent.generated.h"
 
+class UNiagaraSystem;
+class USoundBase;
+struct FHitResult;
+
 /** 아이템 종류 */
 UENUM(BlueprintType)
 enum class EItemType : uint8
@@ -146,6 +150,40 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon|Buff")
 	float StunDuration = 3.f;
 
+	// ─── 피탄 이펙트 ────────────────────────────────────────────────
+	/** 일반 오브젝트(벽·바닥 등) 피탄 이펙트 — 기본값 NS_Damage(흰색) */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon|FX")
+	TObjectPtr<UNiagaraSystem> WorldImpactEffect;
+
+	/** 좀비 피탄 이펙트 — 기본값 NS_Damage(붉게 틴트). 따로 만든 NS로 교체 가능 */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon|FX")
+	TObjectPtr<UNiagaraSystem> ZombieImpactEffect;
+
+	/** Niagara 색상 User 파라미터 이름. 시스템에 이 파라미터가 노출돼 있을 때만 색 적용됨 */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon|FX")
+	FName ImpactColorParam = TEXT("User.Color");
+
+	/** 일반 오브젝트 피탄 색 */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon|FX")
+	FLinearColor WorldImpactColor = FLinearColor::White;
+
+	/** 좀비 피탄 색 (붉은 계열) */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon|FX")
+	FLinearColor ZombieImpactColor = FLinearColor(1.f, 0.05f, 0.05f, 1.f);
+
+	// ─── 사운드 (에디터에서 .wav/Cue 할당) ─────────────────────────
+	/** 발사음 — 발사 1발마다 재생 */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon|Sound")
+	TObjectPtr<USoundBase> FireSound;
+
+	/** 재장전음 — 재장전 시작 시 재생 */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon|Sound")
+	TObjectPtr<USoundBase> ReloadSound;
+
+	/** 피탄음 — 명중 지점에서 재생 (선택) */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon|Sound")
+	TObjectPtr<USoundBase> ImpactSound;
+
 private:
 	bool  bIsFiring             = false;
 	bool  bIsFireRateBuff       = false;
@@ -159,4 +197,7 @@ private:
 	void FinishReload();
 	void EndFireRateBuff();
 	void PerformLineTrace();
+
+	/** 피탄 지점에 Niagara 이펙트 스폰 (좀비면 붉게, 그 외면 흰색) */
+	void SpawnImpactEffect(const FHitResult& Hit, bool bIsZombie);
 };

@@ -15,6 +15,9 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "Kismet/GameplayStatics.h"
+#include "NiagaraSystem.h"
+#include "NiagaraFunctionLibrary.h"
+#include "UObject/ConstructorHelpers.h"
 
 AZombiePlayerCharacter::AZombiePlayerCharacter()
 {
@@ -37,6 +40,14 @@ AZombiePlayerCharacter::AZombiePlayerCharacter()
 	WeaponMeshComp->SetupAttachment(GetMesh(), TEXT("hand_r"));
 	WeaponMeshComp->SetCollisionProfileName(TEXT("NoCollision"));
 	WeaponMeshComp->SetGenerateOverlapEvents(false);
+
+	// 머즐 플래시 기본값: NS_MuzzleFlash (BP에서 교체 가능)
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> MuzzleFX(
+		TEXT("/Game/Variant_Combat/VFX/NS_MuzzleFlash.NS_MuzzleFlash"));
+	if (MuzzleFX.Succeeded())
+	{
+		MuzzleFlashEffect = MuzzleFX.Object;
+	}
 
 	// ─── 이동 설정 ───────────────────────────────────────────────────
 	// 캐릭터 회전은 Tick의 FaceAimPoint()가 실제 조준점을 향해 처리
@@ -368,6 +379,15 @@ void AZombiePlayerCharacter::HandleWeaponFired()
 	{
 		// RPS가 높으면 몽타주가 끝나기 전 재시작될 수 있음 (최소 구성의 의도된 한계)
 		PlayAnimMontage(FireMontage);
+	}
+
+	// 총구 소켓에 머즐 플래시 스폰 (메시에 붙여서 총이 움직여도 따라감)
+	if (MuzzleFlashEffect && WeaponMeshComp && WeaponMeshComp->DoesSocketExist(MuzzleSocketName))
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAttached(
+			MuzzleFlashEffect, WeaponMeshComp, MuzzleSocketName,
+			FVector::ZeroVector, FRotator::ZeroRotator,
+			EAttachLocation::SnapToTarget, /*bAutoDestroy=*/true);
 	}
 }
 

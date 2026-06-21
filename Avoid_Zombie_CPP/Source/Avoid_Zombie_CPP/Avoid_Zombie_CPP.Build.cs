@@ -23,7 +23,8 @@ public class Avoid_Zombie_CPP : ModuleRules
 			"Slate",
 			"SlateCore",          // 게임오버 위젯 C++ 빌드(FCoreStyle/FSlateColorBrush)용
 			"RenderCore",         // HUD 캔버스 삼각형 드로잉(GWhiteTexture)용
-			"GameplayTags"        // Lyra 이식 카메라 모드의 CameraTypeTag용
+			"GameplayTags",       // Lyra 이식 카메라 모드의 CameraTypeTag용
+			"Niagara"             // 총기 피탄 이펙트(NS_Damage) 스폰용
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });

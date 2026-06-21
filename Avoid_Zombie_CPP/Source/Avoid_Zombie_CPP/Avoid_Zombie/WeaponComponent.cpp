@@ -7,11 +7,25 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
-#include "DrawDebugHelpers.h"
+#include "Sound/SoundBase.h"
+#include "NiagaraSystem.h"
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "UObject/ConstructorHelpers.h"
 
 UWeaponComponent::UWeaponComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+
+	// 피탄 이펙트 기본값: Combat 템플릿의 NS_Damage (벽·좀비 공통 기본값)
+	// → 좀비용은 에디터에서 색을 붉게 틴트하거나 전용 NS로 교체하면 됨
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> ImpactFX(
+		TEXT("/Game/Variant_Combat/VFX/NS_Damage.NS_Damage"));
+	if (ImpactFX.Succeeded())
+	{
+		WorldImpactEffect  = ImpactFX.Object;
+		ZombieImpactEffect = ImpactFX.Object;
+	}
 }
 
 void UWeaponComponent::BeginPlay()
@@ -90,6 +104,10 @@ void UWeaponComponent::FireOnce()
 	PerformLineTrace();
 	OnWeaponFired.Broadcast(); // 발사 몽타주 재생 트리거 (캐릭터가 바인딩)
 
+	// 발사음 (소유 액터 위치에서 3D 재생)
+	if (FireSound && GetOwner())
+		UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetOwner()->GetActorLocation());
+
 	FireTimer = (GetCurrentRPS() > 0.f) ? (1.f / GetCurrentRPS()) : 0.1f;
 
 	if (CurrentAmmo <= 0)
@@ -137,16 +155,34 @@ void UWeaponComponent::PerformLineTrace()
 
 	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Pawn, Params);
 
-#if WITH_EDITOR
-	DrawDebugLine(GetWorld(), Start, bHit ? Hit.ImpactPoint : End,
-		bHit ? FColor::Red : FColor::Green, false, 0.05f, 0, 1.f);
-#endif
-
 	if (bHit)
 	{
-		if (AZombieCharacter* Zombie = Cast<AZombieCharacter>(Hit.GetActor()))
+		AZombieCharacter* Zombie = Cast<AZombieCharacter>(Hit.GetActor());
+		if (Zombie)
 			Zombie->TakeDamageAmount(BaseDamagePerBullet);
+
+		// 좀비/오브젝트 가리지 않고 피탄 지점에 이펙트 표시
+		SpawnImpactEffect(Hit, Zombie != nullptr);
 	}
+}
+
+// ─── 피탄 이펙트 ───────────────────────────────────────────────────────────
+void UWeaponComponent::SpawnImpactEffect(const FHitResult& Hit, bool bIsZombie)
+{
+	UNiagaraSystem* Sys = bIsZombie ? ZombieImpactEffect : WorldImpactEffect;
+	if (!Sys) return;
+
+	// 피탄면 법선 방향으로 향하게 스폰 (표면에서 튀어나오는 느낌)
+	UNiagaraComponent* FX = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+		GetWorld(), Sys, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
+
+	// 시스템에 색상 User 파라미터가 노출돼 있을 때만 색 적용 (없으면 무시되어 안전)
+	if (FX && !ImpactColorParam.IsNone())
+		FX->SetVariableLinearColor(ImpactColorParam, bIsZombie ? ZombieImpactColor : WorldImpactColor);
+
+	// 피탄음 (명중 지점에서 3D 재생)
+	if (ImpactSound)
+		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, Hit.ImpactPoint);
 }
 
 // ─── 재장전 ───────────────────────────────────────────────────────────────
@@ -158,6 +194,16 @@ void UWeaponComponent::StartReload()
 	ReloadTimer           = GetCurrentReloadTime();
 	CurrentReloadDuration = ReloadTimer; // 진행률 분모로 고정 (도중 버프 만료와 무관)
 	OnReloadStarted.Broadcast(ReloadTimer); // 재장전 몽타주 재생 트리거 (수동/자동 모두 이 경로)
+
+	// 재장전음 — 클립 길이를 재장전 시간(2초/버프 1초)에 맞춰 배속(피치) 보정.
+	// 1초 버프엔 ~2.65배가 필요 → DefaultEngine.ini의 GlobalMaxPitchScale=3.0과 짝을 맞춰 상한 3.0.
+	if (ReloadSound && GetOwner())
+	{
+		const float Dur   = ReloadSound->GetDuration();
+		const float Pitch = FMath::Clamp((Dur > 0.f && ReloadTimer > 0.f) ? (Dur / ReloadTimer) : 1.f, 0.4f, 3.0f);
+		UGameplayStatics::PlaySoundAtLocation(this, ReloadSound, GetOwner()->GetActorLocation(), 1.f, Pitch);
+	}
+
 	UE_LOG(LogTemp, Log, TEXT("[Weapon] 재장전 시작 (%.1f초)"), ReloadTimer);
 }
 

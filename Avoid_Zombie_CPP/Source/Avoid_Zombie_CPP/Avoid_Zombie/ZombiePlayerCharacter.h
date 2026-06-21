@@ -15,6 +15,7 @@ class UInputMappingContext;
 class UInputAction;
 class UStaticMeshComponent;
 class UAnimMontage;
+class UNiagaraSystem;
 
 /** 체력 변경 델리게이트 (현재 체력, 최대 체력) */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, float, CurrentHealth, float, MaxHealth);
@@ -71,6 +72,15 @@ public:
 	// 이 컴포넌트의 Parent Socket·Transform으로 조정 (뷰포트에 그대로 반영됨)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TObjectPtr<UStaticMeshComponent> WeaponMeshComp;
+
+	// ─── 머즐 플래시 (발사 시 총구 이펙트) ──────────────────────────
+	/** 발사 시 총구 소켓에 재생할 머즐 플래시 (기본값 NS_MuzzleFlash 자동 로드) */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon|FX")
+	TObjectPtr<UNiagaraSystem> MuzzleFlashEffect;
+
+	/** 머즐 플래시를 붙일 소총 메시의 소켓 이름 */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon|FX")
+	FName MuzzleSocketName = TEXT("MuzzleSocket");
 
 	// ─── 무장 애니메이션 몽타주 (에디터에서 할당) ──────────────────
 	/** 발사 시 재생할 몽타주 (예: AM_Rifle_Fire) */
